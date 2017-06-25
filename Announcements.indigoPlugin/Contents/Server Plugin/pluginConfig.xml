@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
 
-<!--Depricated - presently, there's no need for a config dialog. At some point-->
-<!--will at least need to include a debug control and an updater control.-->
-
 <PluginConfig>
 	<Field id="infoLabel0" type="label">
 		<Label>Announcements Plugin - Developed by DaveL17</Label>

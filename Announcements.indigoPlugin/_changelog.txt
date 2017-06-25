@@ -1,0 +1,9 @@
+Announcements Indigo Plugin - Developed by: DaveL17
+
+v0.3.2
+- Adds Action to update single announcement on demand.
+- Fixed bug in announcement refresh interval.
+- Consolidates regex substitutions to single function call.
+
+v0.3.1
+- Initial release.

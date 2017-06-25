@@ -1,8 +1,8 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
-# TODO: Ensure only one Salutations device is created.
 # TODO: Best way to update device states after device config is closed?
+# TODO: Include plugin update notifications.
 
 import ast
 import datetime as dt
@@ -17,8 +17,10 @@ try:
     import indigo
 except ImportError, error:
     indigo.server.log(str(error), isError=True)
+
 try:
     import pydevd
+    # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
 except ImportError, error:
     indigo.server.log(str(error), isError=True)
 
@@ -27,7 +29,7 @@ __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.1'
+__version__   = '0.3.2'
 
 
 class Plugin(indigo.PluginBase):
@@ -51,10 +53,7 @@ class Plugin(indigo.PluginBase):
         self.logger.info(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
         self.logger.info(u"{0:=^80}".format(""))
 
-        # To enable remote PyCharm Debugging, uncomment the next line.
-        # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-
-        # Establish folder if it doesn't exist.
+        # Establish data folder if it doesn't exist.
         working_directory = u"{0}/Announcements Plugin/".format(os.path.expanduser('~'))
         if not os.path.exists(working_directory):
             os.makedirs(working_directory)
@@ -73,45 +72,32 @@ class Plugin(indigo.PluginBase):
     def __del__(self):
         indigo.PluginBase.__del__(self)
 
-    def startup(self):
+    def closedDeviceConfigUi(self, valuesDict, userCancelled, typeId, devId):
         """"""
-        self.logger.debug(u"startup() called.")
+        self.logger.debug(u"closedDeviceConfigUi() called.")
 
-        # ==============================================================
-        # ============= Delete Out of Date Announcements ===============
-        # ==============================================================
+    def closedPrefsConfigUi(self, valuesDict, userCancelled):
+        """ User closes config menu. The validatePrefsConfigUI() method will
+        also be called."""
+        self.logger.debug(u"closedPrefsConfigUi() called.")
+        self.debugLevel = int(valuesDict['showDebugLevel'])
+        self.update_frequency = int(valuesDict['pluginRefresh'])
+        self.indigo_log_handler.setLevel(self.debugLevel)
+        self.logger.info(u"Debugging set to: {0}".format(self.debugLevel))
 
-        # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
-            infile = outfile.read()
-
-        # Convert the string implementation of the dict to an actual dict.
-        infile = ast.literal_eval(infile)
-
-        # Look at each plugin device id and delete any announcements if there is no longer an associated device.
-        for key in infile.keys():
-            if key not in indigo.devices.keys('self'):
-                del infile[key]
-
-        # Look at each plugin device and construct a placeholder if not already present.
-        for dev in indigo.devices.iter('self'):
-            if dev.id not in infile.keys():
-                infile[dev.id] = {}
-
-        # Open the announcements file and save the new dict.
-        with open(self.announcements_file, 'w') as outfile:
-            outfile.write(u"{0}".format(infile))
+        # Update the devices to reflect any changes
+        self.updateAnnouncementStates()
 
     def deviceStartComm(self, dev):
         """"""
         self.logger.debug(u"deviceStartComm() called.")
         dev.stateListOrDisplayStateIdChanged()
-        dev.updateStateOnServer('onOffState', value=False, uiValue=u"")
+        dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
 
     def deviceStopComm(self, dev):
         """"""
         self.logger.debug(u"deviceStopComm() called.")
-        dev.updateStateOnServer('onOffState', value=False, uiValue=u"")
+        dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
 
     def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
         """Called when a device configuration dialog is opened. """
@@ -122,7 +108,7 @@ class Plugin(indigo.PluginBase):
 
         # Ensure that the dialog opens with fresh fields.
         if typeId == 'announcementsDevice':
-            for key in ['announcementName', 'announcementList', 'announcementRefresh', 'announcementText']:
+            for key in ['announcementName', 'announcementList', 'announcementRefresh', 'announcementText', 'subGeneratorResult']:
                 valuesDict[key] = ''
 
         return valuesDict
@@ -176,23 +162,40 @@ class Plugin(indigo.PluginBase):
         except self.StopThread:
             pass
 
+    def startup(self):
+        """"""
+        self.logger.debug(u"startup() called.")
+
+        # ==============================================================
+        # ============= Delete Out of Date Announcements ===============
+        # ==============================================================
+
+        # Open the announcements file and load the contents
+        with open(self.announcements_file) as outfile:
+            infile = outfile.read()
+
+        # Convert the string implementation of the dict to an actual dict.
+        infile = ast.literal_eval(infile)
+
+        # Look at each plugin device id and delete any announcements if there is no longer an associated device.
+        for key in infile.keys():
+            if key not in indigo.devices.keys('self'):
+                del infile[key]
+
+        # Look at each plugin device and construct a placeholder if not already present.
+        for dev in indigo.devices.iter('self'):
+            if dev.id not in infile.keys():
+                infile[dev.id] = {}
+
+        # Open the announcements file and save the new dict.
+        with open(self.announcements_file, 'w') as outfile:
+            outfile.write(u"{0}".format(infile))
+
     def validatePrefsConfigUi(self, valuesDict):
         """ Validate select plugin config menu settings."""
         self.logger.debug(u"validatePrefsConfigUi() called.")
 
         return True, valuesDict
-
-    def closedPrefsConfigUi(self, valuesDict, userCancelled):
-        """ User closes config menu. The validatePrefsConfigUI() method will
-        also be called."""
-        self.logger.debug(u"closedPrefsConfigUi() called.")
-        self.debugLevel = int(valuesDict['showDebugLevel'])
-        self.update_frequency = int(valuesDict['pluginRefresh'])
-        self.indigo_log_handler.setLevel(self.debugLevel)
-        self.logger.info(u"Debugging set to: {0}".format(self.debugLevel))
-
-        # Update the devices to reflect any changes
-        self.updateAnnouncementStates()
 
     def validateDeviceConfigUi(self, valuesDict, typeId, devId):
         """"""
@@ -219,10 +222,6 @@ class Plugin(indigo.PluginBase):
         self.updateAnnouncementStates()
         return True, valuesDict
 
-    def closedDeviceConfigUi(self, valuesDict, userCancelled, typeId, devId):
-        """"""
-        self.logger.debug(u"closedDeviceConfigUi() called.")
-
     # ==============================================================
     # ================ Announcement Plugin Methods =================
     # ==============================================================
@@ -238,6 +237,34 @@ class Plugin(indigo.PluginBase):
 
         return index
 
+    def killAllComms(self):
+        """ killAllComms() sets the enabled status of all plugin devices to
+        false. """
+        self.logger.debug(u"killAllComms method() called.")
+
+        for dev in indigo.devices.itervalues("self"):
+            try:
+                indigo.device.enable(dev, value=False)
+
+            except Exception as sub_error:
+                self.logger.critical(u"Exception when trying to kill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
+
+    def unkillAllComms(self):
+        """ unkillAllComms() sets the enabled status of all plugin devices to
+        true. """
+        self.logger.debug(u"unkillAllComms method() called.")
+
+        for dev in indigo.devices.itervalues("self"):
+            try:
+                indigo.device.enable(dev, value=True)
+
+            except Exception as sub_error:
+                self.logger.critical(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
+
+    # ==============================================================
+    # ================ Announcement Format Methods =================
+    # ==============================================================
+
     def formatDigits(self, match):
         """The formatDigits function determines the proper formatting routine to
         use when converting target values to the specified format. It sends the
@@ -250,20 +277,23 @@ class Plugin(indigo.PluginBase):
 
         # current time conversions specified with ct: ...
         if match2.startswith('ct:'):
-            result = self.currentTimeFormat(match1, match2)
+            result = self.formatCurrentTime(match1, match2)
 
         # datetime conversions specified with dt: ...
         elif match2.startswith('dt:'):
-            result = self.dateTimeFormat(match1, match2)
+            result = self.formatDatetime(match1, match2)
 
         # number conversions specified with n: ...
         elif match2.startswith('n:'):
-            result = self.numberFormat(match1, match2)
+            result = self.formatNumber(match1, match2)
+
+        else:
+            result = u"{0} {1}".format(match1, match2)
 
         return result
 
-    def currentTimeFormat(self, match1, match2):
-        """The currentTimeFormat function is used to create a formatted version
+    def formatCurrentTime(self, match1, match2):
+        """The formatCurrentTime function is used to create a formatted version
         of the current time."""
 
         match2 = match2.replace('ct:', '')
@@ -274,11 +304,12 @@ class Plugin(indigo.PluginBase):
                     raise ValueError
             match1 = dt.datetime.now()
             return "{0:{1}}".format(match1, match2)
+
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
-    def dateTimeFormat(self, match1, match2):
-        """The dateTimeFormat function is used to format the string based on common
+    def formatDatetime(self, match1, match2):
+        """The formatDatetime function is used to format the string based on common
         Python datetime format specifiers."""
 
         match2 = match2.replace('dt:', '')
@@ -289,11 +320,12 @@ class Plugin(indigo.PluginBase):
                     raise ValueError
             match1 = parser.parse(match1)
             return "{0:{1}}".format(match1, match2)
+
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
-    def numberFormat(self, match1, match2):
-        """The numberFormat function is used to format the string based on common
+    def formatNumber(self, match1, match2):
+        """The formatNumber function is used to format the string based on common
         Python numeric format specifiers"""
 
         match2 = match2.replace('n:', '')
@@ -303,31 +335,48 @@ class Plugin(indigo.PluginBase):
                 if char not in '%+-0123456789eEfFgGn':  # allowable numeric specifiers
                     raise ValueError
             return u"{0:0.{1}f}".format(float(match1), int(match2))
+
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
-    def killAllComms(self):
-        """ killAllComms() sets the enabled status of all plugin devices to
-        false. """
-        self.logger.debug(u"killAllComms method() called.")
+    # ==============================================================
+    # ======================== Generators ==========================
+    # ==============================================================
 
-        for dev in indigo.devices.itervalues("self"):
-            try:
-                indigo.device.enable(dev, value=False)
-            except Exception as sub_error:
-                self.logger.critical(u"Exception when trying to kill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
+    def generatorDeviceList(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """Returns a list of plugin devices."""
+        self.logger.debug(u"refreshAnnouncementAction() called.")
+        return [(dev.id, dev.name) for dev in indigo.devices.iter('self')]
 
-    def timeGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """Creates a list of times for use in setting salutation settings."""
-        self.logger.debug(u"timeGenerator() called.")
+    def generatorAnnouncementList(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """Returns a list of states for selected plugin device."""
+        self.logger.debug(u"generatorAnnouncementList() called.")
 
-        return [(hour, u"{0:02.0f}:00".format(hour)) for hour in range(0, 24)]
+        try:
+            announcement_id = valuesDict['announcementDeviceToRefresh']
+            return [(state, state) for state in indigo.devices[int(announcement_id)].states if 'onOffState' not in state]
 
-    def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
+        except ValueError:
+            return [('None', 'None')]
+
+    def generatorDevVar(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """This method collects IDs and names for all Indigo devices and
+        variables. It creates a list of the form:
+        [(dev.id, dev.name), (var.id, var.name)].
+        """
+        self.logger.debug(u"generatorDevVar() called.")
+
+        master_list = []
+        [master_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices.iter()]
+        [master_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables.iter()]
+
+        return master_list
+
+    def generatorList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """Populates the list of announcements based on the device's states.
         When building the list, we exclude certain states which allows us to
         have states that aren't announcements."""
-        self.logger.debug(u"listGenerator() called.")
+        self.logger.debug(u"generatorList() called.")
 
         # Open the announcements file and load the contents
         with open(self.announcements_file) as outfile:
@@ -339,21 +388,70 @@ class Plugin(indigo.PluginBase):
         # Sort the dict and create a list of tuples for the device config list control.
         try:
             announcement_list = [(key, infile[targetId][key]['Name']) for key in infile[targetId].keys()]
+
         except KeyError:
             announcement_list = []
 
         return sorted(announcement_list, key=lambda (k, val): unicode.lower(val))
 
-    def unkillAllComms(self):
-        """ unkillAllComms() sets the enabled status of all plugin devices to
-        true. """
-        self.logger.debug(u"unkillAllComms method() called.")
+    def generatorStateOrValue(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """The generatorStateOrValue() method returns a list to populate the relevant
+        device states or variable value to populate a menu control."""
+        self.logger.debug(u"generatorStateOrValue() called.")
 
-        for dev in indigo.devices.itervalues("self"):
-            try:
-                indigo.device.enable(dev, value=True)
-            except Exception as sub_error:
-                self.logger.critical(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
+        try:
+            id_number = int(valuesDict['devVarMenu'])
+
+            if id_number in indigo.devices.keys():
+                state_list = [(state, state) for state in indigo.devices[id_number].states if not state.endswith('.ui')]
+                state_list.remove(('onOffState', 'onOffState'))
+                return state_list
+
+            elif id_number in indigo.variables.keys():
+                return [('value', 'Value')]
+
+        except (KeyError, ValueError):
+            return [(0, 'Pick a Device or Variable')]
+
+    def generatorSubstitutions(self, valuesDict, typeId="", targetId=0):
+        """The generatorSubstitutions function is used with the Substitution Generator.
+        It is the callback that's used to create the Indigo substitution
+        construct."""
+        self.logger.debug(u"generatorSubstitutions() called.")
+
+        starting_text = valuesDict['textfield1']
+        dev_var_id    = valuesDict['devVarMenu']
+        dev_var_value = valuesDict['generatorStateOrValue']
+
+        try:
+            if int(valuesDict['devVarMenu']) in indigo.devices.keys():
+                valuesDict['textfield1'] = u"{0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value)
+                announcement = self.substitute(u"Current Announcement: {0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value))
+                result = self.substitutionRegex(announcement)
+                self.logger.info(result)
+
+            else:
+                valuesDict['textfield1'] = u"{0} %%v:{1}%%".format(starting_text, dev_var_id)
+                announcement = self.substitute(u"Current Announcement: {0} %%v:{1}%%".format(starting_text, dev_var_id))
+                result = self.substitutionRegex(announcement)
+                self.logger.info(result)
+
+            valuesDict['devVarMenu'] = ''
+            valuesDict['generatorStateOrValue'] = ''
+
+            return valuesDict
+
+        except ValueError:
+            announcement = self.substitute(valuesDict['textfield1'])
+            result = self.substitutionRegex(announcement)
+            self.logger.info(u"Substitution Generator announcement: \"{0}\"".format(result))
+            return valuesDict
+
+    def generatorTime(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """Creates a list of times for use in setting salutation settings."""
+        self.logger.debug(u"generatorTime() called.")
+
+        return [(hour, u"{0:02.0f}:00".format(hour)) for hour in range(0, 24)]
 
     def updateAnnouncementStates(self):
         """"""
@@ -383,12 +481,15 @@ class Plugin(indigo.PluginBase):
                     if morning <= now < afternoon:
                         intro_value = (dev.pluginProps.get('morningMessageIn', 'Good morning.'))
                         outro_value = (dev.pluginProps.get('morningMessageOut', 'Have a great morning.'))
+
                     elif afternoon <= now < evening:
                         intro_value = (dev.pluginProps.get('afternoonMessageIn', 'Good afternoon.'))
                         outro_value = (dev.pluginProps.get('afternoonMessageOut', 'Have a great afternoon.'))
+
                     elif evening <= now < night:
                         intro_value = (dev.pluginProps.get('eveningMessageIn', 'Good evening.'))
                         outro_value = (dev.pluginProps.get('eveningMessageOut', 'Have a great evening.'))
+
                     else:
                         intro_value = (dev.pluginProps.get('nightMessageIn', 'Good night.'))
                         outro_value = (dev.pluginProps.get('nightMessageOut', 'Have a great night.'))
@@ -397,9 +498,11 @@ class Plugin(indigo.PluginBase):
                     if intro_value != dev.states['intro']:
                         self.logger.debug(u"Updating intro to: {0}".format(intro_value))
                         dev.updateStateOnServer('intro', value=intro_value)
+
                     if outro_value != dev.states['outro']:
                         self.logger.debug(u"Updating outro to: {0}".format(outro_value))
                         dev.updateStateOnServer('outro', value=outro_value)
+
                     dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
 
                 elif dev.deviceTypeId == 'announcementsDevice':
@@ -416,15 +519,17 @@ class Plugin(indigo.PluginBase):
 
                             state_name = u"{0}".format(infile[dev.id][key]['Name'].replace(' ', '_'))
                             try:
-                                update_time = dt.datetime.strptime(infile[dev.id][key]['nextRefresh'], '%Y-%m-%d %H:%M:%S.%f')
+                                update_time = dt.datetime.strptime(infile[dev.id][key]['nextRefresh'], '%Y-%m-%d %H:%M:%S')
+
                             except ValueError:
+                                self.logger.warning(u"Error coercing announcement update time.")
                                 update_time = now - dt.timedelta(minutes=1)  # If the refresh time hasn't been established yet.
 
                             # If it's time for an announcement to be refreshed.
                             if now >= update_time:
                                 # Update the announcement text.
                                 announcement = self.substitute(infile[dev.id][key]['Announcement'])
-                                result = re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
+                                result = self.substitutionRegex(announcement)
                                 dev.updateStateOnServer(state_name, value=result)
 
                                 # Set the next refresh time
@@ -452,6 +557,7 @@ class Plugin(indigo.PluginBase):
 
         for key in ['announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText']:
             valuesDict[key] = ''
+
         valuesDict['editFlag'] = False
         return valuesDict
 
@@ -474,6 +580,7 @@ class Plugin(indigo.PluginBase):
 
         for key in ['announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText']:
             valuesDict[key] = ''
+
         valuesDict['editFlag'] = False
 
         return valuesDict
@@ -564,6 +671,7 @@ class Plugin(indigo.PluginBase):
         if valuesDict['announcementName'][0:3].lower() == 'xml':
             self.logger.error(u"A announcement name can not start with the letters 'xml'.")
             return valuesDict
+
         if not all(ord(char) < 128 for char in valuesDict['announcementName']):
             self.logger.error(u"A announcement name can not contain Unicode characters.")
             return valuesDict
@@ -588,6 +696,7 @@ class Plugin(indigo.PluginBase):
 
         try:
             temp_dict = infile[devId]
+
         except KeyError:
             temp_dict = {}
 
@@ -630,6 +739,7 @@ class Plugin(indigo.PluginBase):
         # Clear the fields.
         for key in ['announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText']:
             valuesDict[key] = ''
+
         valuesDict['editFlag'] = False
 
         return valuesDict
@@ -641,9 +751,7 @@ class Plugin(indigo.PluginBase):
 
         # The user has entered a value in the announcement field. Speak that.
         if len(valuesDict['announcementText']) > 0:
-            announcement = self.substitute(valuesDict['announcementText'])
-            result = re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
-            self.logger.debug(str(result))
+            result = self.substitutionRegex(self.substitute(valuesDict['announcementText']))
             indigo.server.speak(result)
 
             self.logger.info(u"{0}".format(result))
@@ -658,7 +766,7 @@ class Plugin(indigo.PluginBase):
             infile = ast.literal_eval(infile)
 
             announcement = self.substitute(infile[devId][int(valuesDict['announcementList'])]['Announcement'])
-            result = re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
+            result = self.substitutionRegex(announcement)
             indigo.server.speak(result)
 
             self.logger.info(u"{0}".format(result))
@@ -670,74 +778,44 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
-    def insertSomeText(self, valuesDict, typeId="", targetId=0):
-        """The insertSomeText function is a placeholder to be used with the
-        Substitution Generator.  It is the callback that's used to create the
-        Indigo substitution construct."""
-        self.logger.debug(u"insertSomeText() called.")
-
-        starting_text = valuesDict['textfield1']
-        dev_var_id    = valuesDict['devVarMenu']
-        dev_var_value = valuesDict['stateOrValue']
-
-        try:
-            if int(valuesDict['devVarMenu']) in indigo.devices.keys():
-                valuesDict['textfield1'] = u"{0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value)
-                announcement = self.substitute(u"Current Announcement: {0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value))
-                result = re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
-                self.logger.info(result)
-            else:
-                valuesDict['textfield1'] = u"{0} %%v:{1}%%".format(starting_text, dev_var_id)
-                announcement = self.substitute(u"Current Announcement: {0} %%v:{1}%%".format(starting_text, dev_var_id))
-                result = re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
-                self.logger.info(result)
-
-            valuesDict['devVarMenu'] = ''
-            valuesDict['stateOrValue'] = ''
-
-            return valuesDict
-
-        except ValueError:
-            announcement = self.substitute(valuesDict['textfield1'])
-            result = re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
-            self.logger.info(u"Substitution Generator announcement: \"{0}\"".format(result))
-            return valuesDict
-
-    def devVarGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """This method collects IDs and names for all Indigo devices and
-        variables. It creates a list of the form:
-        [(dev.id, dev.name), (var.id, var.name)].
-        """
-        self.logger.debug(u"devVarGenerator() called.")
-
-        master_list = []
-        [master_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices.iter()]
-        [master_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables.iter()]
-
-        return master_list
-
-    def stateOrValue(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """The stateOrValue() method returns a list to populate the relevant
-        device states or variable value to populate a menu control."""
-        self.logger.debug(u"stateOrValue() called.")
-
-        try:
-            id_number = int(valuesDict['devVarMenu'])
-
-            if id_number in indigo.devices.keys():
-                state_list = [(state, state) for state in indigo.devices[id_number].states if not state.endswith('.ui')]
-                state_list.remove(('onOffState', 'onOffState'))
-                return state_list
-
-            elif id_number in indigo.variables.keys():
-                return [('value', 'Value')]
-
-        except (KeyError, ValueError):
-            return [(0, 'Pick a Device or Variable')]
+    # ==============================================================
+    # ====================== Plugin Callbacks ======================
+    # ==============================================================
 
     def refreshFields(self, filter="", typeId="", targetId=0):
         """The refreshFields() method is a dummy callback used solely to fire
         other actions that require a callback be run. It performs no other
-        service."""
-        self.logger.debug(u"__refreshFields__() called.")
+        function."""
+        self.logger.debug(u"refreshFields() called.")
         pass
+
+    # ==============================================================
+    # ======== Plugin Action to Refresh Single Announcement ========
+    # ==============================================================
+
+    def refreshAnnouncementAction(self, pluginAction):
+        """The refreshAnnouncementAction() method is used to force an
+        announcement to be refreshed by using an Indigo Action Item."""
+        self.logger.debug(u"refreshAnnouncementAction() called.")
+        announcement_name = pluginAction.props['announcementToRefresh']
+        device_id = int(pluginAction.props['announcementDeviceToRefresh'])
+        dev = indigo.devices[device_id]
+
+        # Open the announcements file and load the contents
+        with open(self.announcements_file) as outfile:
+            infile = outfile.read()
+
+        # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
+        infile = ast.literal_eval(infile)
+
+        # Iterate through the keys to find the right announcement to update.
+        announcement_dict = infile[int(device_id)]
+        for key in announcement_dict.keys():
+            if announcement_dict[key]['Name'] == announcement_name.replace('_', ' '):
+                announcement = self.substitute(infile[device_id][key]['Announcement'])
+                result = self.substitutionRegex(announcement)
+                dev.updateStateOnServer(announcement_name, value=result)
+
+    def substitutionRegex(self, announcement):
+        """This is the main regex used for formatting substitutions."""
+        return re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
