@@ -7,6 +7,7 @@
 import ast
 import datetime as dt
 import logging
+import pydevd
 import os
 from dateutil import parser
 import re
@@ -15,12 +16,6 @@ import sys
 
 try:
     import indigo
-except ImportError, error:
-    indigo.server.log(str(error), isError=True)
-
-try:
-    import pydevd
-    # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
 except ImportError, error:
     indigo.server.log(str(error), isError=True)
 
@@ -37,6 +32,8 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
+        # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', '30'))
@@ -45,13 +42,13 @@ class Plugin(indigo.PluginBase):
         self.logger.debug(u"Plugin refresh interval: {0}".format(self.update_frequency))
 
         self.logger.info(u"")
-        self.logger.info(u"{0:=^80}".format(" Initializing New Plugin Session "))
+        self.logger.info(u"{0:=^130}".format(" Initializing New Plugin Session "))
         self.logger.info(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
         self.logger.info(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
         self.logger.info(u"{0:<31} {1}".format("Plugin ID:", pluginId))
         self.logger.info(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
         self.logger.info(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
-        self.logger.info(u"{0:=^80}".format(""))
+        self.logger.info(u"{0:=^130}".format(""))
 
         # Establish data folder if it doesn't exist.
         working_directory = u"{0}/Announcements Plugin/".format(os.path.expanduser('~'))
@@ -470,12 +467,18 @@ class Plugin(indigo.PluginBase):
             if dev.enabled:
 
                 if dev.deviceTypeId == 'salutationsDevice':
-                    now = dt.datetime.now()
+                    now   = dt.datetime.now()
+                    today = dt.datetime.today().date()
 
-                    morning = now.replace(hour=int(dev.pluginProps.get('morningStart', '5')))
-                    afternoon = now.replace(hour=int(dev.pluginProps.get('afternoonStart', '12')))
-                    evening = now.replace(hour=int(dev.pluginProps.get('eveningStart', '17')))
-                    night = now.replace(hour=int(dev.pluginProps.get('nightStart', '21')))
+                    morning_start   = int(dev.pluginProps.get('morningStart', '5'))
+                    afternoon_start = int(dev.pluginProps.get('afternoonStart', '12'))
+                    evening_start   = int(dev.pluginProps.get('eveningStart', '17'))
+                    night_start     = int(dev.pluginProps.get('nightStart', '21'))
+
+                    morning   = dt.datetime.combine(today, dt.time(morning_start, 0))
+                    afternoon = dt.datetime.combine(today, dt.time(afternoon_start, 0))
+                    evening   = dt.datetime.combine(today, dt.time(evening_start, 0))
+                    night     = dt.datetime.combine(today, dt.time(night_start, 0))
 
                     # Determine proper salutation based on the current time.
                     if morning <= now < afternoon:
