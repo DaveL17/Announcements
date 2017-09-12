@@ -24,7 +24,7 @@ __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.2'
+__version__   = '0.3.3'
 
 
 class Plugin(indigo.PluginBase):
@@ -353,7 +353,7 @@ class Plugin(indigo.PluginBase):
             announcement_id = valuesDict['announcementDeviceToRefresh']
             return [(state, state) for state in indigo.devices[int(announcement_id)].states if 'onOffState' not in state]
 
-        except ValueError:
+        except KeyError:
             return [('None', 'None')]
 
     def generatorDevVar(self, filter="", valuesDict=None, typeId="", targetId=0):

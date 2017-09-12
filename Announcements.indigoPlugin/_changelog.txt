@@ -1,10 +1,12 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
 v0.3.3
+- Moves the Refresh Announcements Action item to the devices actions list.
+  (Select Action Group --> Device Actions --> Announcements Controls)
 - Improves time banding for salutation selection.
 - Adds remote debugging.
 
-v0.3.2 * current *
+v0.3.2
 - Adds Action to update single announcement on demand.
 - Fixed bug in announcement refresh interval.
 - Consolidates regex substitutions to single function call.
