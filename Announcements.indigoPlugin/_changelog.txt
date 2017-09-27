@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v0.3.4
+- Fixes pydevd import error.
+
 v0.3.3
 - Moves the Refresh Announcements Action item to the devices actions list.
   (Select Action Group --> Device Actions --> Announcements Controls)

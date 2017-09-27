@@ -7,7 +7,6 @@
 import ast
 import datetime as dt
 import logging
-import pydevd
 import os
 from dateutil import parser
 import re
@@ -19,12 +18,17 @@ try:
 except ImportError, error:
     indigo.server.log(str(error), isError=True)
 
+try:
+    import pydevd
+except ImportError:
+    pass
+
 __author__    = "DaveL17"
 __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.3'
+__version__   = '0.3.4'
 
 
 class Plugin(indigo.PluginBase):
@@ -32,7 +36,10 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
-        # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        try:
+            pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        except NameError:
+            pass
 
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
