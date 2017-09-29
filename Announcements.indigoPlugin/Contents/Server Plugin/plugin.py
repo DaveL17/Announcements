@@ -3,6 +3,8 @@
 
 # TODO: Best way to update device states after device config is closed?
 # TODO: Include plugin update notifications.
+# TODO: Substitution generator is broken
+# TODO: Add Action Group item to speak the announcement.
 
 import ast
 import datetime as dt
