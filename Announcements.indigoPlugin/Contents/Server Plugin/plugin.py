@@ -3,7 +3,6 @@
 
 # TODO: Best way to update device states after device config is closed?
 # TODO: Include plugin update notifications.
-# TODO: Substitution generator is broken
 # TODO: Add Action Group item to speak the announcement.
 
 import ast
@@ -30,7 +29,7 @@ __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.4'
+__version__   = '0.3.5'
 
 
 class Plugin(indigo.PluginBase):
@@ -425,27 +424,42 @@ class Plugin(indigo.PluginBase):
         construct."""
         self.logger.debug(u"generatorSubstitutions() called.")
 
-        starting_text = valuesDict['textfield1']
         dev_var_id    = valuesDict['devVarMenu']
         dev_var_value = valuesDict['generatorStateOrValue']
 
         try:
             if int(valuesDict['devVarMenu']) in indigo.devices.keys():
-                valuesDict['textfield1'] = u"{0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value)
-                announcement = self.substitute(u"Current Announcement: {0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value))
-                result = self.substitutionRegex(announcement)
-                self.logger.info(result)
+                valuesDict['subGeneratorResult'] = u"%%d:{0}:{1}%%".format(dev_var_id, dev_var_value)
 
             else:
-                valuesDict['textfield1'] = u"{0} %%v:{1}%%".format(starting_text, dev_var_id)
-                announcement = self.substitute(u"Current Announcement: {0} %%v:{1}%%".format(starting_text, dev_var_id))
-                result = self.substitutionRegex(announcement)
-                self.logger.info(result)
+                valuesDict['subGeneratorResult'] = u"%%v:{0}%%".format(dev_var_id)
 
             valuesDict['devVarMenu'] = ''
             valuesDict['generatorStateOrValue'] = ''
 
             return valuesDict
+
+        # Delete the following block if all is well with the change to the
+        # substitution generator.
+        #
+        # starting_text = valuesDict['textfield1']
+        # try:
+        #     if int(valuesDict['devVarMenu']) in indigo.devices.keys():
+        #         valuesDict['textfield1'] = u"{0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value)
+        #         announcement = self.substitute(u"Current Announcement: {0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value))
+        #         result = self.substitutionRegex(announcement)
+        #         self.logger.info(result)
+        #
+        #     else:
+        #         valuesDict['textfield1'] = u"{0} %%v:{1}%%".format(starting_text, dev_var_id)
+        #         announcement = self.substitute(u"Current Announcement: {0} %%v:{1}%%".format(starting_text, dev_var_id))
+        #         result = self.substitutionRegex(announcement)
+        #         self.logger.info(result)
+        #
+        #     valuesDict['devVarMenu'] = ''
+        #     valuesDict['generatorStateOrValue'] = ''
+        #
+        #     return valuesDict
 
         except ValueError:
             announcement = self.substitute(valuesDict['textfield1'])

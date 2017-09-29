@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v0.3.5
+- Fixes bug in substitution generator.
+
 v0.3.4
 - Fixes pydevd import error.
 
