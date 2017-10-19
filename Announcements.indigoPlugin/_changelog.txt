@@ -1,5 +1,10 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v0.3.6
+- Code consolidation using DLFramework.
+- Code consolidation using pluginConfig templates.
+- Implements plugin version update checker.
+
 v0.3.5
 - Fixes bug in substitution generator.
 

@@ -1,19 +1,29 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
+""" docstring placeholder """
+
+# =================================== TO DO ===================================
+
 # TODO: Best way to update device states after device config is closed?
 # TODO: Include plugin update notifications.
 # TODO: Add Action Group item to speak the announcement.
+# TODO: kDefaultPluginPrefs
 
+# ================================== IMPORTS ==================================
+
+# Built-in modules
 import ast
 import datetime as dt
+from dateutil import parser
 import logging
 import os
-from dateutil import parser
 import re
 import string
 import sys
 
+# Third-party modules
+import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError, error:
@@ -24,12 +34,21 @@ try:
 except ImportError:
     pass
 
-__author__    = "DaveL17"
-__build__     = ""
-__copyright__ = 'Copyright 2017 DaveL17'
-__license__   = "MIT"
+# My modules
+import DLFramework
+
+# =================================== HEADER ==================================
+
+__author__    = DLFramework.__author__
+__copyright__ = DLFramework.__copyright__
+__license__   = DLFramework.__license__
+__build__     = DLFramework.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.5'
+__version__   = '0.3.6'
+
+# =============================================================================
+
+# kDefaultPluginPrefs = {}
 
 
 class Plugin(indigo.PluginBase):
@@ -37,10 +56,8 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
-        # try:
-        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-        # except NameError:
-        #     pass
+        updater_url = "https://davel17.github.io/Announcements/Announcements_version.html"
+        self.updater = indigoPluginUpdateChecker.updateChecker(self, updater_url)
 
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
@@ -49,14 +66,14 @@ class Plugin(indigo.PluginBase):
         self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
         self.logger.debug(u"Plugin refresh interval: {0}".format(self.update_frequency))
 
-        self.logger.info(u"")
-        self.logger.info(u"{0:=^130}".format(" Initializing New Plugin Session "))
-        self.logger.info(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
-        self.logger.info(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
-        self.logger.info(u"{0:<31} {1}".format("Plugin ID:", pluginId))
-        self.logger.info(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
-        self.logger.info(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
-        self.logger.info(u"{0:=^130}".format(""))
+        # ====================== Initialize DLFramework =======================
+
+        self.dlf = DLFramework.Fogbert(self)
+
+        # Log pluginEnvironment information when plugin is first started
+        self.dlf.pluginEnvironment()
+
+        # =====================================================================
 
         # Establish data folder if it doesn't exist.
         working_directory = u"{0}/Announcements Plugin/".format(os.path.expanduser('~'))
@@ -69,6 +86,11 @@ class Plugin(indigo.PluginBase):
             with open(self.announcements_file, 'w+') as outfile:
                 outfile.write(u'{}')
             self.sleep(1)  # Wait a moment to let the system catch up.
+
+        # try:
+        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        # except:
+        #     pass
 
     # ==============================================================
     # ======================= Indigo Methods =======================
@@ -160,6 +182,9 @@ class Plugin(indigo.PluginBase):
 
         try:
             while True:
+                self.updater.checkVersionPoll()
+                self.sleep(1)
+
                 self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
                 self.updateAnnouncementStates()
                 self.sleep(self.update_frequency)
@@ -170,6 +195,8 @@ class Plugin(indigo.PluginBase):
     def startup(self):
         """"""
         self.logger.debug(u"startup() called.")
+
+        self.updater.checkVersionPoll()
 
         # ==============================================================
         # ============= Delete Out of Date Announcements ===============
@@ -230,6 +257,12 @@ class Plugin(indigo.PluginBase):
     # ==============================================================
     # ================ Announcement Plugin Methods =================
     # ==============================================================
+
+    def checkVersionNow(self):
+        """ The checkVersionNow() method will call the Indigo Plugin Update
+        Checker based on a user request. """
+
+        self.updater.checkVersionNow()
 
     def createAnnouncementId(self, temp_dict):
         """Create a unique ID number for the announcement."""
