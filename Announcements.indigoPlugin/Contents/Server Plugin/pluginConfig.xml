@@ -6,14 +6,26 @@
 		<Label>Announcements Plugin - Developed by DaveL17</Label>
 	</Field>
 
+	<Field id="space00" type="label"/>
+
+	<Field id="space01" type="label" alignText="right">
+	<Label>Plugin Settings:</Label>
+	</Field>
+
+	<Field id="separator00" type="separator"/>
+
 	<Field id="pluginRefresh" type="textfield" defaultValue="15" tooltip="Enter the number of seconds between refreshes.">
 		<Label>Refresh Frequency</Label>
 	</Field>
 
+    <Field id="refreshLabel" type="label" fontSize="small" alignWithControl="True">
+        <Label>Enter the number of seconds between announcement refreshes.</Label>
+    </Field>
+
     <!-- Notifications Template -->
-    <Template file="template_notifications.xml" />
+    <Template file="DLFramework/template_notifications.xml" />
 
     <!-- Debugging Template -->
-    <Template file="template_debugging.xml" />
+    <Template file="DLFramework/template_debugging.xml" />
 
 </PluginConfig>

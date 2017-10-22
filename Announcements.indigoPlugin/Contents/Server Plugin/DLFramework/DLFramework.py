@@ -12,7 +12,7 @@ import sys
 
 
 __author__ = "DaveL17"
-__build__ = "Foo"
+__build__ = "Unused"
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "DLFramework"
@@ -46,18 +46,20 @@ class Fogbert(object):
 
         def convertDebugLevel(self, debug_val):
             """
-            docstring placeholder
+            The convertDebugLevel method is used to standardize the various implementations 
+            of debug level settings across plugins. Its main purpose is to convert an old
+            string-based setting to account for older plugin versions. Over time, this
+            method will become obsolete and should be deprecated.
             """
             self.plugin.debugLog(u"DLFramework somethingElse method called.")
 
-            # Use the indigo.logger.x debug framework
-            if 10 >= debug_val <= 50:
-                return debug_val
-
-            # If debug framework uses old high/medium/low framework -- convert it to 1/2/3 framework
-            if debug_val == "High":
-                return 3
-            elif debug_val == "Medium":
-                return 2
-            else:
-                return 1
+            # If the debug value is High/Medium/Low, it is the old style. Covert it to 3/2/1
+            if debug_val in ["High", "Medium", "Low"]:
+                if debug_val == "High":
+                    return 3
+                elif debug_val == "Medium":
+                    return 2
+                else:
+                    return 1
+            
+            return debug_val

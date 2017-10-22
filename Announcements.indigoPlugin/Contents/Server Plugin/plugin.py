@@ -23,7 +23,7 @@ import string
 import sys
 
 # Third-party modules
-import indigoPluginUpdateChecker
+from DLFramework import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError, error:
@@ -35,14 +35,14 @@ except ImportError:
     pass
 
 # My modules
-import DLFramework
+import DLFramework as dlf
 
 # =================================== HEADER ==================================
 
-__author__    = DLFramework.__author__
-__copyright__ = DLFramework.__copyright__
-__license__   = DLFramework.__license__
-__build__     = DLFramework.__build__
+__author__    = dlf.DLFramework.__author__
+__copyright__ = dlf.DLFramework.__copyright__
+__license__   = dlf.DLFramework.__license__
+__build__     = dlf.DLFramework.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
 __version__   = '0.3.6'
 
@@ -68,7 +68,7 @@ class Plugin(indigo.PluginBase):
 
         # ====================== Initialize DLFramework =======================
 
-        self.dlf = DLFramework.Fogbert(self)
+        self.dlf = dlf.DLFramework.Fogbert(self)
 
         # Log pluginEnvironment information when plugin is first started
         self.dlf.pluginEnvironment()
