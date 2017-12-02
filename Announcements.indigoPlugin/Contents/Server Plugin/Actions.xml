@@ -5,21 +5,26 @@
         <Name>Refresh Announcement</Name>
         <CallbackMethod>refreshAnnouncementAction</CallbackMethod>
         <ConfigUI>
+
 			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
 				<Label>Use this Action Item to select an individual announcement to be refreshed. You must first select a device to refresh and then the select from the list of announcmenets for that device.</Label>
 			</Field>
+
             <Field id="announcementDeviceToRefresh" type="menu" fontColor="black" fontSize="regular">
                 <Label>Device:</Label>
                 <List class="self" filter="" method="generatorDeviceList" dynamicReload="true"/>
                 <CallbackMethod>refreshFields</CallbackMethod>
             </Field>
+
             <Field id="announcementToRefresh" type="menu" fontColor="black" fontSize="regular">
                 <Label>Announcement:</Label>
                 <List class="self" filter="" method="generatorAnnouncementList" dynamicReload="true"/>
             </Field>
+
 			<Field id="exampleLabel" type="label" fontColor="black" fontSize="small" alignWithControl="true">
 				<Label>Only this announcement will be refreshed when the Action Item is called. To refresh more announcements, create additional Action Items.</Label>
 			</Field>
+
         </ConfigUI>
     </Action>
 </Actions>

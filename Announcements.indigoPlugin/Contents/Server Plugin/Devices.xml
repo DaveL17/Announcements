@@ -1,75 +1,95 @@
 <?xml version="1.0"?>
 <Devices>
+
 	<Device type="custom" id="announcementsDevice">
 		<Name>Announcements Device</Name>
 		<ConfigUI>
+
             <Field id="label1" type="label">
                 <Label>Modifiers:</Label>
             </Field>
+
             <Field id="label2" type="label" fontColor="blue" fontSize="small">
                 <Label>     Current Time: ct:%H:%M, ct:%A, ...
      Date/Time: dt:%H:%M, dt:%A
-     Numerics: n:0, n:1, ...           </Label>
+     Numerics: n:0, n:1, ...</Label>
             </Field>
+
             <Field id="label3" type="label">
                 <Label>Syntax:</Label>
             </Field>
+
             <Field id="label4" type="label" fontColor="blue" fontSize="small">
                 <Label>     Current Time: &lt;&lt;now, ct:%A&gt;&gt;
      Device: &lt;&lt;%%d:12345678:state_name%%, dt:%H:%M&gt;&gt;
      Variable: &lt;&lt;%%v:12345678%%, n:2&gt;&gt;</Label>
             </Field>
+
             <Field id="label5" type="label">
                 <Label>For example:</Label>
             </Field>
+
             <Field id="label6" type="label" fontColor="blue" fontSize="small">
                 <Label>%%d:24058256:intro%%. It's &lt;&lt;%%v:1289138982%%, dt:%A&gt;&gt; at &lt;&lt;now, ct:%-I:%M%p&gt;&gt;. The current temperature is &lt;&lt;%%d:1149686816:temp%%, n:0&gt;&gt; degrees.</Label>
             </Field>
+
             <Field id="label7" type="label">
                 <Label>Will result in:</Label>
             </Field>
+
             <Field id="label8" type="label" fontColor="blue" fontSize="small">
                 <Label>"Good afternoon. It's Tuesday at 3:24 pm. The current temperature is 42 degrees."</Label>
             </Field>
+
             <Field id="titleSeparator" type="separator"/>
+
             <Field id="announcementList" type="list" rows="5" tooltip="The list of configured announcements.">
                 <Label>Announcements</Label>
                 <List class="self" method="generatorList" dynamicReload="true"/>
             </Field>
+
             <Field id="announcementName" type="textfield" tooltip="Please enter a name for the announcement.">
                 <Label>Name</Label>
             </Field>
+
             <Field id="announcementText" type="textfield" tooltip="Please enter the text to be spoken.">
                 <Label>Announcement</Label>
             </Field>
+
             <Field id="announcementRefresh" type="textfield" defaultValue="" tooltip="Please enter the number of minutes to refresh the announcement (Integer greater than 0).">
                 <Label>Refresh Interval</Label>
             </Field>
+
             <Field id="speakAnnouncement" type="button" tooltip="Please select an announcement from the list above or enter text into the Announcement field to test speech. This feature will only work on the Indigo server machine.">
                 <Label/>
                 <Title>Speak Announcement</Title>
                 <CallbackMethod>speakAnnouncement</CallbackMethod>
             </Field>
+
             <Field id="saveAnnouncement" type="button" tooltip="Please complete all fields and then click Save Announcement.">
                 <Label/>
                 <Title>Save Announcement</Title>
                 <CallbackMethod>saveAnnouncement</CallbackMethod>
             </Field>
+
             <Field id="editAnnouncement" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Edit Announcement.">
                 <Label/>
                 <Title>Edit Announcement</Title>
                 <CallbackMethod>editAnnouncement</CallbackMethod>
             </Field>
+
             <Field id="deleteAnnouncement" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Delete Announcement. CAUTION! Announcements are deleted instantly and permanently.">
                 <Label/>
                 <Title>Delete Announcement</Title>
                 <CallbackMethod>deleteAnnouncement</CallbackMethod>
             </Field>
+
             <Field id="duplicateAnnouncement" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Duplicate Announcement to create a copy of an existing announcement.">
                 <Label/>
                 <Title>Duplicate Announcement</Title>
                 <CallbackMethod>duplicateAnnouncement</CallbackMethod>
             </Field>
+
             <Field id="clearAnnouncement" type="button" tooltip="Remove all text from the text fields.">
                 <Label/>
                 <Title>Clear Fields</Title>
@@ -78,21 +98,26 @@
 
             <!-- Substitution Generator -->
             <Field id="subGeneratorSeparator" type="separator"/>
+
             <Field id="subGeneratorLabel" type="label">
                 <Label>Substitution Generator:</Label>
             </Field>
+
             <Field id="subGeneratorResult" type="textfield" tooltip="Your substitution will appear here.">
                 <Label>Substitution</Label>
             </Field>
+
             <Field id="devVarMenu" type="menu" tooltip="Please select a device or variable.">
                 <Label>Device / Variable</Label>
                 <List class="self" filter="" method="generatorDevVar" dynamicReload="true"/>
                 <CallbackMethod>refreshFields</CallbackMethod>
             </Field>
+
             <Field id="generatorStateOrValue" type="menu" tooltip="Please select a device state or variable value.">
                 <Label>State / Value</Label>
                 <List class="self" filter="" method="generatorStateOrValue" dynamicReload="true"/>
             </Field>
+
             <Field id="subGeneratorButton" type="button" tooltip="Generate the substitution.">
                 <Label/>
                 <Title>Generate Substitution</Title>
@@ -101,12 +126,15 @@
 
             <!-- Hidden Controls -->
             <Field id="hiddenSeparator" type="separator" hidden="true"/>
+
             <Field id="hiddenLabel" type="label" hidden="true">
                 <Label>Hidden controls:</Label>
             </Field>
+
             <Field id="editFlag" type="checkbox" defaultValue="false" hidden="true">
                 <Label>Being edited?</Label>
             </Field>
+
             <Field id="announcementIndex" type="textfield" readonly="true" tooltip="The unique index ID for the announcement." hidden="true">
                 <Label>Index</Label>
             </Field>
@@ -119,84 +147,109 @@
             <!--</Field>-->
 
 		</ConfigUI>
+
         <States>
+
             <State id="onOffState">
                 <ValueType>Boolean</ValueType>
                 <TriggerLabel>Device State</TriggerLabel>
                 <ControlPageLabel>Device State</ControlPageLabel>
             </State>
+
         </States>
+
         <UiDisplayStateId>onOffState</UiDisplayStateId>
     </Device>
 
 	<Device type="custom" id="salutationsDevice">
 		<Name>Salutations Device</Name>
 		<ConfigUI>
+
             <Field id="label1" type="label">
                 <Label>Use this device to create standard greetings that can be added to the beginning and/or end of any announcement. The text of the greeting to be used is controlled by time of day settings.</Label>
             </Field>
+
             <Field id="titleSeparator" type="separator"/>
+
             <Field id="morningStart" type="menu" defaultValue="5">
                 <Label>Morning Starts at:</Label>
                 <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
             </Field>
+
             <Field id="morningMessageIn" type="textfield" defaultValue="Good morning">
                 <Label>Intro:</Label>
             </Field>
+
             <Field id="morningMessageOut" type="textfield" defaultValue="Have a great morning">
                 <Label>Outro:</Label>
             </Field>
+
             <Field id="afternoonStart" type="menu" defaultValue="12">
                 <Label>Afternoon Starts at:</Label>
                 <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
             </Field>
+
             <Field id="afternoonMessageIn" type="textfield" defaultValue="Good afternoon">
                 <Label>Intro:</Label>
             </Field>
+
             <Field id="afternoonMessageOut" type="textfield" defaultValue="Have a great afternoon">
                 <Label>Outro:</Label>
             </Field>
+
             <Field id="eveningStart" type="menu" defaultValue="17">
                 <Label>Evening Starts at:</Label>
                 <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
             </Field>
+
             <Field id="eveningMessageIn" type="textfield" defaultValue="Good evening">
                 <Label>Intro:</Label>
             </Field>
+
             <Field id="eveningMessageOut" type="textfield" defaultValue="Have a great evening">
                 <Label>Outro:</Label>
             </Field>
+
             <Field id="nightStart" type="menu" defaultValue="22">
                 <Label>Night Starts at:</Label>
                 <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
             </Field>
+
             <Field id="nightMessageIn" type="textfield" defaultValue="Good night">
                 <Label>Intro:</Label>
             </Field>
+
             <Field id="nightMessageOut" type="textfield" defaultValue="Have a great night">
                 <Label>Outro:</Label>
             </Field>
+
             <Field id="footerSeparator" type="separator"/>
+
             <Field id="salutationsFooter" type="label" fontSize="small">
                 <Label>Note: if a single greeting is preferred (the same announcement used throughout the day) a standard announcement can be used.</Label>
             </Field>
+
 		</ConfigUI>
         <States>
+
             <State id="onOffState">
                 <ValueType>Boolean</ValueType>
                 <TriggerLabel>Device State</TriggerLabel>
                 <ControlPageLabel>Device State</ControlPageLabel>
             </State>
+
             <State id="intro">
                 <ValueType>String</ValueType>
                 <TriggerLabel>Salutation</TriggerLabel>
                 <ControlPageLabel>Salutation</ControlPageLabel>
             </State>
+
             <State id="outro">
                 <ValueType>String</ValueType>
                 <TriggerLabel>Sincerely</TriggerLabel>
                 <ControlPageLabel>Sincerely</ControlPageLabel>
             </State>
+
         </States>
         <UiDisplayStateId>onOffState</UiDisplayStateId>
     </Device>

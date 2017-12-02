@@ -5,10 +5,7 @@
 
 # =================================== TO DO ===================================
 
-# TODO: Best way to update device states after device config is closed?
-# TODO: Include plugin update notifications.
 # TODO: Add Action Group item to speak the announcement.
-# TODO: kDefaultPluginPrefs
 
 # ================================== IMPORTS ==================================
 
@@ -35,20 +32,25 @@ except ImportError:
     pass
 
 # My modules
-import DLFramework as dlf
+import DLFramework.DLFramework as Dave
 
 # =================================== HEADER ==================================
 
-__author__    = dlf.DLFramework.__author__
-__copyright__ = dlf.DLFramework.__copyright__
-__license__   = dlf.DLFramework.__license__
-__build__     = dlf.DLFramework.__build__
+__author__    = Dave.__author__
+__copyright__ = Dave.__copyright__
+__license__   = Dave.__license__
+__build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.6'
+__version__   = '0.3.7'
 
 # =============================================================================
 
-# kDefaultPluginPrefs = {}
+kDefaultPluginPrefs = {
+    u'pluginRefresh': "15",
+    u'updaterEmailsEnabled': False,
+    u'updaterEmail': "",
+    u'showDebugLevel': "30",
+}
 
 
 class Plugin(indigo.PluginBase):
@@ -61,17 +63,17 @@ class Plugin(indigo.PluginBase):
 
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
-        self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', '30'))
+        self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.indigo_log_handler.setLevel(self.debugLevel)
         self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
         self.logger.debug(u"Plugin refresh interval: {0}".format(self.update_frequency))
 
         # ====================== Initialize DLFramework =======================
 
-        self.dlf = dlf.DLFramework.Fogbert(self)
+        self.Fogbert = Dave.Fogbert(self)
 
         # Log pluginEnvironment information when plugin is first started
-        self.dlf.pluginEnvironment()
+        self.Fogbert.pluginEnvironment()
 
         # =====================================================================
 
@@ -107,10 +109,12 @@ class Plugin(indigo.PluginBase):
         """ User closes config menu. The validatePrefsConfigUI() method will
         also be called."""
         self.logger.debug(u"closedPrefsConfigUi() called.")
+
+        debug_label = {10: u"Debugging Messages", 20: u"Informational Messages", 30: u"Warning Messages", 40: u"Error Messages", 50: u"Critical Errors Only"}
         self.debugLevel = int(valuesDict['showDebugLevel'])
         self.update_frequency = int(valuesDict['pluginRefresh'])
         self.indigo_log_handler.setLevel(self.debugLevel)
-        self.logger.info(u"Debugging set to: {0}".format(self.debugLevel))
+        indigo.server.log(u"Debugging set to: {0}".format(debug_label[self.debugLevel]))
 
         # Update the devices to reflect any changes
         self.updateAnnouncementStates()

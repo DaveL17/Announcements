@@ -3,13 +3,17 @@
 <PluginConfig>
 
 	<Field id="infoLabel0" type="label">
-		<Label>Announcements Plugin - Developed by DaveL17</Label>
+		<Label>Announcements Plugin</Label>
+	</Field>
+
+	<Field id="infoLabel1" type="label" fontSize="small">
+		<Label>Developed by DaveL17</Label>
 	</Field>
 
 	<Field id="space00" type="label"/>
 
 	<Field id="space01" type="label" alignText="right">
-	<Label>Plugin Settings:</Label>
+	<Label>Plugin Settings</Label>
 	</Field>
 
 	<Field id="separator00" type="separator"/>
@@ -23,9 +27,9 @@
     </Field>
 
     <!-- Notifications Template -->
-    <Template file="DLFramework/template_notifications.xml" />
+    <Template file="DLFramework/template_notifications.xml"/>
 
     <!-- Debugging Template -->
-    <Template file="DLFramework/template_debugging.xml" />
+    <Template file="DLFramework/template_debugging.xml"/>
 
 </PluginConfig>
