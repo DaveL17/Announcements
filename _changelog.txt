@@ -1,6 +1,7 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
 v0.3.7
+- Prepared for Indigo Plugin Store
 - Establishes kDefaultPluginPrefs
 - Implements indigoPluginUpdateChecker
 
