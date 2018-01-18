@@ -5,7 +5,7 @@
 
 # =================================== TO DO ===================================
 
-# TODO: Add Action Group item to speak the announcement.
+# TODO: Datetime modifier appears to be broken when there's an embedded space.
 
 # ================================== IMPORTS ==================================
 
@@ -41,7 +41,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.3.7'
+__version__   = '0.4.0'
 
 # =============================================================================
 
@@ -317,15 +317,15 @@ class Plugin(indigo.PluginBase):
         match1 = match1.replace('<<', '')
         match2 = match2.replace('>>', '')
 
-        # current time conversions specified with ct: ...
+        # Current time conversions specified with ct: ...
         if match2.startswith('ct:'):
             result = self.formatCurrentTime(match1, match2)
 
-        # datetime conversions specified with dt: ...
+        # Datetime conversions specified with dt: ...
         elif match2.startswith('dt:'):
             result = self.formatDatetime(match1, match2)
 
-        # number conversions specified with n: ...
+        # Number conversions specified with n: ...
         elif match2.startswith('n:'):
             result = self.formatNumber(match1, match2)
 
@@ -385,21 +385,25 @@ class Plugin(indigo.PluginBase):
     # ======================== Generators ==========================
     # ==============================================================
 
-    def generatorDeviceList(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """Returns a list of plugin devices."""
-        self.logger.debug(u"refreshAnnouncementAction() called.")
-        return [(dev.id, dev.name) for dev in indigo.devices.iter('self')]
-
     def generatorAnnouncementList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """Returns a list of states for selected plugin device."""
         self.logger.debug(u"generatorAnnouncementList() called.")
 
         try:
-            announcement_id = valuesDict['announcementDeviceToRefresh']
-            return [(state, state) for state in indigo.devices[int(announcement_id)].states if 'onOffState' not in state]
+            announcement_id = int(valuesDict['announcementDeviceToRefresh'])
+            if announcement_id in indigo.devices.keys():
+                return [(state, state) for state in indigo.devices[announcement_id].states if 'onOffState' not in state]
+            else:
+                return [('value', 'Value')]
 
         except KeyError:
             return [('None', 'None')]
+
+    def generatorDeviceList(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """Returns a list of plugin devices."""
+        self.logger.debug(u"generatorDeviceList() called.")
+
+        return self.Fogbert.deviceList(filter='self')
 
     def generatorDevVar(self, filter="", valuesDict=None, typeId="", targetId=0):
         """This method collects IDs and names for all Indigo devices and
@@ -408,21 +412,15 @@ class Plugin(indigo.PluginBase):
         """
         self.logger.debug(u"generatorDevVar() called.")
 
-        master_list = []
-        [master_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices.iter()]
-        [master_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables.iter()]
-
-        return master_list
+        return self.Fogbert.deviceAndVariableList()
 
     def generatorList(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """Populates the list of announcements based on the device's states.
-        When building the list, we exclude certain states which allows us to
-        have states that aren't announcements."""
+        """Populates the list of announcements based on the device's states."""
         self.logger.debug(u"generatorList() called.")
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
-            infile = outfile.read()
+        with open(self.announcements_file) as input_file:
+            infile = input_file.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
         infile = ast.literal_eval(infile)
@@ -475,28 +473,6 @@ class Plugin(indigo.PluginBase):
             valuesDict['generatorStateOrValue'] = ''
 
             return valuesDict
-
-        # Delete the following block if all is well with the change to the
-        # substitution generator.
-        #
-        # starting_text = valuesDict['textfield1']
-        # try:
-        #     if int(valuesDict['devVarMenu']) in indigo.devices.keys():
-        #         valuesDict['textfield1'] = u"{0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value)
-        #         announcement = self.substitute(u"Current Announcement: {0} %%d:{1}:{2}%%".format(starting_text, dev_var_id, dev_var_value))
-        #         result = self.substitutionRegex(announcement)
-        #         self.logger.info(result)
-        #
-        #     else:
-        #         valuesDict['textfield1'] = u"{0} %%v:{1}%%".format(starting_text, dev_var_id)
-        #         announcement = self.substitute(u"Current Announcement: {0} %%v:{1}%%".format(starting_text, dev_var_id))
-        #         result = self.substitutionRegex(announcement)
-        #         self.logger.info(result)
-        #
-        #     valuesDict['devVarMenu'] = ''
-        #     valuesDict['generatorStateOrValue'] = ''
-        #
-        #     return valuesDict
 
         except ValueError:
             announcement = self.substitute(valuesDict['textfield1'])
@@ -598,7 +574,7 @@ class Plugin(indigo.PluginBase):
                                 # Set the next refresh time
                                 next_update = now + dt.timedelta(minutes=int(infile[dev.id][key]['Refresh']))
                                 infile[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
-                                self.logger.info(u"{0} updated.".format(infile[dev.id][key]['Name']))
+                                self.logger.debug(u"{0} updated.".format(infile[dev.id][key]['Name']))
 
                         dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
 
@@ -807,6 +783,10 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # ==============================================================
+    # ====================== Plugin Callbacks ======================
+    # ==============================================================
+
     def speakAnnouncement(self, valuesDict, typeId, devId):
         """Called when user clicks the Speak Announcement button"""
         self.logger.debug(u"speakAnnouncement() called.")
@@ -815,7 +795,7 @@ class Plugin(indigo.PluginBase):
         # The user has entered a value in the announcement field. Speak that.
         if len(valuesDict['announcementText']) > 0:
             result = self.substitutionRegex(self.substitute(valuesDict['announcementText']))
-            indigo.server.speak(result)
+            indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
 
@@ -830,20 +810,35 @@ class Plugin(indigo.PluginBase):
 
             announcement = self.substitute(infile[devId][int(valuesDict['announcementList'])]['Announcement'])
             result = self.substitutionRegex(announcement)
-            indigo.server.speak(result)
+            indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
 
         # Otherwise, let the user know that there is nothing to speak.
         else:
             self.logger.error(default_string)
-            indigo.server.speak(default_string)
+            indigo.server.speak(default_string, waitUntilDone=False)
 
         return valuesDict
 
-    # ==============================================================
-    # ====================== Plugin Callbacks ======================
-    # ==============================================================
+    def speakAnnouncementAction(self, pluginAction):
+        """
+        Indigo action for speaking any device state or variable value.
+        """
+        indigo.server.log('speakAnnouncementAction() called.')
+
+        item_source   = int(pluginAction.props['announcementDeviceToRefresh'])
+        item_to_speak = pluginAction.props['announcementToSpeak']
+
+        try:
+            if item_source in indigo.devices.keys():
+                announcement = str(indigo.devices[item_source].states[item_to_speak])
+                indigo.server.speak(announcement, waitUntilDone=False)
+            else:
+                announcement = indigo.variables[item_source].value
+                indigo.server.speak(announcement, waitUntilDone=False)
+        except ValueError:
+            self.logger.warning(u"Unable to speak {0} value.".format(item_to_speak))
 
     def refreshFields(self, filter="", typeId="", targetId=0):
         """The refreshFields() method is a dummy callback used solely to fire
@@ -861,8 +856,8 @@ class Plugin(indigo.PluginBase):
         announcement to be refreshed by using an Indigo Action Item."""
         self.logger.debug(u"refreshAnnouncementAction() called.")
         announcement_name = pluginAction.props['announcementToRefresh']
-        device_id = int(pluginAction.props['announcementDeviceToRefresh'])
-        dev = indigo.devices[device_id]
+        device_id         = int(pluginAction.props['announcementDeviceToRefresh'])
+        dev               = indigo.devices[device_id]
 
         # Open the announcements file and load the contents
         with open(self.announcements_file) as outfile:

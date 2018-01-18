@@ -27,4 +27,30 @@
 
         </ConfigUI>
     </Action>
+    <Action id="speakAnnouncement" uiPath="DeviceActions">
+        <Name>Speak Announcement</Name>
+        <CallbackMethod>speakAnnouncementAction</CallbackMethod>
+        <ConfigUI>
+
+			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
+				<Label>Use this Action Item to select an individual announcement to be spoken. You must first select a device or variable to speak and then the select from the list of announcmenets for that item.</Label>
+			</Field>
+
+            <Field id="announcementDeviceToRefresh" type="menu" fontColor="black" fontSize="regular">
+                <Label>Source:</Label>
+                <List class="self" filter="" method="generatorDevVar" dynamicReload="true"/>
+                <CallbackMethod>refreshFields</CallbackMethod>
+            </Field>
+
+            <Field id="announcementToSpeak" type="menu" fontColor="black" fontSize="regular">
+                <Label>Item to Speak:</Label>
+                <List class="self" filter="" method="generatorAnnouncementList" dynamicReload="true"/>
+            </Field>
+
+			<Field id="exampleLabel" type="label" fontColor="black" fontSize="small" alignWithControl="true">
+				<Label>Only this announcement will be refreshed when the Action Item is called. To refresh more announcements, create additional Action Items.</Label>
+			</Field>
+
+        </ConfigUI>
+    </Action>
 </Actions>

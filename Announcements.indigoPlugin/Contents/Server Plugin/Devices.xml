@@ -11,7 +11,7 @@
 
             <Field id="label2" type="label" fontColor="blue" fontSize="small">
                 <Label>     Current Time: ct:%H:%M, ct:%A, ...
-     Date/Time: dt:%H:%M, dt:%A
+     Date/Time: dt:%H:%M, dt:%A, ...
      Numerics: n:0, n:1, ...</Label>
             </Field>
 

@@ -65,6 +65,40 @@ class Fogbert(object):
             
             return debug_val
             
+        def deviceList(self, filter=None):
+            """
+            Returns a list of tuples containing Indigo devices for use in
+            config dialogs (etc.)
+
+            :return: [(ID, "Name"), (ID, "Name")]
+            """
+            devices_list = [('None', 'None')]
+            [devices_list.append((dev.id, dev.name)) for dev in indigo.devices.iter(filter)]
+            return devices_list
+
+        def variableList(self):
+            """
+            Returns a list of tuples containing Indigo variables for use in
+            config dialogs (etc.)
+
+            :return: [(ID, "Name"), (ID, "Name")]
+            """
+            variable_list = [('None', 'None')]
+            [variable_list.append((var.id, var.name)) for var in indigo.variables]
+            return variable_list
+
+        def deviceAndVariableList(self):
+            """
+            Returns a list of tuples containing Indigo devices and variables
+            for use in config dialogs (etc.)
+
+            :return: [(ID, "(D) Name"), (ID, "(V) Name")]
+            """
+            devices_and_variables_list = [('None', 'None')]
+            [devices_and_variables_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices]
+            [devices_and_variables_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables]
+            return devices_and_variables_list
+
         def lauchWebPage(self, url):
             """
             The launchWebPage method is used to direct a call to the registered
@@ -73,6 +107,7 @@ class Fogbert(object):
             import webbrowser
             
             webbrowser.open(url)
+
 
 class Formatter(object):
         """ 
