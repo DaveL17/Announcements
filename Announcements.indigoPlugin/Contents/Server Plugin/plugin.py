@@ -316,6 +316,7 @@ class Plugin(indigo.PluginBase):
         match2 = match.group(2)  # the format specification
         match1 = match1.replace('<<', '')
         match2 = match2.replace('>>', '')
+        indigo.server.log(match2)
 
         # Current time conversions specified with ct: ...
         if match2.startswith('ct:'):
@@ -358,7 +359,7 @@ class Plugin(indigo.PluginBase):
 
         try:
             for char in match2:
-                if char not in '%:-aAwdbBmyYHIpMSfzZjUWcxX':  # allowable datetime specifiers
+                if char not in '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ':  # allowable datetime specifiers
                     raise ValueError
             match1 = parser.parse(match1)
             return "{0:{1}}".format(match1, match2)

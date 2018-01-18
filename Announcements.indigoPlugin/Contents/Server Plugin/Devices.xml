@@ -26,7 +26,7 @@
             </Field>
 
             <Field id="label5" type="label">
-                <Label>For example:</Label>
+                <Label>Example:</Label>
             </Field>
 
             <Field id="label6" type="label" fontColor="blue" fontSize="small">
@@ -34,11 +34,16 @@
             </Field>
 
             <Field id="label7" type="label">
-                <Label>Will result in:</Label>
+                <Label>Result:</Label>
             </Field>
 
             <Field id="label8" type="label" fontColor="blue" fontSize="small">
                 <Label>"Good afternoon. It's Tuesday at 3:24 pm. The current temperature is 42 degrees."</Label>
+            </Field>
+
+            <!-- Announcements Creator -->
+            <Field id="announcementsCreatorLabel" type="label" alignText="right">
+                <Label>Announcements Creator</Label>
             </Field>
 
             <Field id="titleSeparator" type="separator"/>
@@ -97,11 +102,11 @@
             </Field>
 
             <!-- Substitution Generator -->
-            <Field id="subGeneratorSeparator" type="separator"/>
-
-            <Field id="subGeneratorLabel" type="label">
-                <Label>Substitution Generator:</Label>
+            <Field id="subGeneratorLabel" type="label" alignText="right">
+                <Label>Substitution Generator</Label>
             </Field>
+
+            <Field id="subGeneratorSeparator" type="separator"/>
 
             <Field id="subGeneratorResult" type="textfield" tooltip="Your substitution will appear here.">
                 <Label>Substitution</Label>
