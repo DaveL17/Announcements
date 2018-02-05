@@ -1,11 +1,19 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
-""" docstring placeholder """
+""" Announcements Plugin for Indigo Home Control Server
+
+The Announcements Plugin is used to construct complex announcements for use
+with text-to-speech tools in Indigo. The plugin provides a simple call to the
+indigo.server.speak() hook for simple audio announcements; however, the plugin
+is more geared towards creating announcements to be used with more advanced
+speech tools.
+
+"""
 
 # =================================== TO DO ===================================
 
-# TODO: Datetime modifier appears to be broken when there's an embedded space.
+# TODO: how will the plugin handle localization like comma separators?
 
 # ================================== IMPORTS ==================================
 
@@ -24,7 +32,7 @@ from DLFramework import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError, error:
-    indigo.server.log(str(error), isError=True)
+    indigo.server.log(unicode(error), isError=True)
 
 try:
     import pydevd
@@ -41,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.4.0'
+__version__   = '0.4.01'
 
 # =============================================================================
 
@@ -58,7 +66,7 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
-        updater_url = "https://davel17.github.io/Announcements/Announcements_version.html"
+        updater_url = "https://raw.githubusercontent.com/DaveL17/Announcements/master/Announcements_version.html"
         self.updater = indigoPluginUpdateChecker.updateChecker(self, updater_url)
 
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
@@ -111,7 +119,7 @@ class Plugin(indigo.PluginBase):
         self.logger.debug(u"closedPrefsConfigUi() called.")
 
         debug_label = {10: u"Debugging Messages", 20: u"Informational Messages", 30: u"Warning Messages", 40: u"Error Messages", 50: u"Critical Errors Only"}
-        self.debugLevel = int(valuesDict['showDebugLevel'])
+        self.debugLevel       = int(valuesDict['showDebugLevel'])
         self.update_frequency = int(valuesDict['pluginRefresh'])
         self.indigo_log_handler.setLevel(self.debugLevel)
         indigo.server.log(u"Debugging set to: {0}".format(debug_label[self.debugLevel]))
@@ -151,7 +159,7 @@ class Plugin(indigo.PluginBase):
            be established here or they 'won't exist.'"""
         self.logger.debug(u"getDeviceStateList() called.")
 
-        dev_id = dev.id
+        dev_id  = dev.id
         type_id = dev.deviceTypeId
 
         if type_id not in self.devicesTypeDict:
@@ -174,7 +182,7 @@ class Plugin(indigo.PluginBase):
 
         # Iterate through the list of tuples and save each announcement name as a device key. Keys (state id's) can't contain Unicode.
         for thing in announcement_list:
-            thing_name = thing[1].replace(' ', '_')
+            thing_name         = thing[1].replace(' ', '_')
             announcement_state = self.getDeviceStateDictForStringType(thing_name, thing_name, thing_name)
             default_states_list.append(announcement_state)
 
@@ -244,10 +252,10 @@ class Plugin(indigo.PluginBase):
 
         # Salutations device
         if 'salutationsTitle' in valuesDict.keys():
-            morning = int(valuesDict['morningStart'])
+            morning   = int(valuesDict['morningStart'])
             afternoon = int(valuesDict['afternoonStart'])
-            evening = int(valuesDict['eveningStart'])
-            night = int(valuesDict['nightStart'])
+            evening   = int(valuesDict['eveningStart'])
+            night     = int(valuesDict['nightStart'])
 
             if not (morning < afternoon < evening < night):
                 for _ in ['morningStart', 'afternoonStart', 'eveningStart', 'nightStart']:
@@ -316,7 +324,6 @@ class Plugin(indigo.PluginBase):
         match2 = match.group(2)  # the format specification
         match1 = match1.replace('<<', '')
         match2 = match2.replace('>>', '')
-        indigo.server.log(match2)
 
         # Current time conversions specified with ct: ...
         if match2.startswith('ct:'):
@@ -343,7 +350,7 @@ class Plugin(indigo.PluginBase):
 
         try:
             for char in match2:
-                if char not in '%:-aAwdbBmyYHIpMSfzZjUWcxX':  # allowable datetime specifiers
+                if char not in '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ':  # allowable datetime specifiers
                     raise ValueError
             match1 = dt.datetime.now()
             return "{0:{1}}".format(match1, match2)
@@ -477,7 +484,7 @@ class Plugin(indigo.PluginBase):
 
         except ValueError:
             announcement = self.substitute(valuesDict['textfield1'])
-            result = self.substitutionRegex(announcement)
+            result       = self.substitutionRegex(announcement)
             self.logger.info(u"Substitution Generator announcement: \"{0}\"".format(result))
             return valuesDict
 
@@ -611,7 +618,7 @@ class Plugin(indigo.PluginBase):
 
         # Convert the string implementation of the dict to an actual dict, and delete the key.
         infile = ast.literal_eval(infile)
-        index = int(valuesDict['announcementList'])
+        index  = int(valuesDict['announcementList'])
         del infile[devId][index]
 
         # Open the announcements file and save the new dict.
@@ -642,11 +649,11 @@ class Plugin(indigo.PluginBase):
         # Create a new announcement.
         temp_dict = infile[devId]
         new_index = self.createAnnouncementId(temp_dict)
-        temp_dict[new_index] = {}
-        temp_dict[new_index]['Name'] = infile[devId][index]['Name'] + u" copy"
+        temp_dict[new_index]                 = {}
+        temp_dict[new_index]['Name']         = infile[devId][index]['Name'] + u" copy"
         temp_dict[new_index]['Announcement'] = infile[devId][index]['Announcement']
-        temp_dict[new_index]['Refresh'] = infile[devId][index]['Refresh']
-        temp_dict[new_index]['nextRefresh'] = infile[devId][index]['nextRefresh']
+        temp_dict[new_index]['Refresh']      = infile[devId][index]['Refresh']
+        temp_dict[new_index]['nextRefresh']  = infile[devId][index]['nextRefresh']
 
         # Set the dict element equal to the new list
         infile[devId] = temp_dict
@@ -667,16 +674,16 @@ class Plugin(indigo.PluginBase):
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the data for this device.
-        infile = ast.literal_eval(infile)
+        infile    = ast.literal_eval(infile)
         temp_dict = infile[devId]
 
         # Get the selected announcement index and populate the UI elements.
         index = int(valuesDict['announcementList'])
-        valuesDict['announcementIndex'] = index
-        valuesDict['announcementName'] = temp_dict[index]['Name']
+        valuesDict['announcementIndex']   = index
+        valuesDict['announcementName']    = temp_dict[index]['Name']
         valuesDict['announcementRefresh'] = temp_dict[index]['Refresh']
-        valuesDict['announcementText'] = temp_dict[index]['Announcement']
-        valuesDict['editFlag'] = True
+        valuesDict['announcementText']    = temp_dict[index]['Announcement']
+        valuesDict['editFlag']            = True
 
         return valuesDict
 
@@ -746,27 +753,27 @@ class Plugin(indigo.PluginBase):
         # If new announcement, create unique id, then save to dict.
         if not valuesDict['editFlag'] and valuesDict['announcementName'] not in announcement_name_list:
             index = self.createAnnouncementId(temp_dict)
-            temp_dict[index] = {}
-            temp_dict[index]['Name'] = valuesDict['announcementName']
+            temp_dict[index]                 = {}
+            temp_dict[index]['Name']         = valuesDict['announcementName']
             temp_dict[index]['Announcement'] = valuesDict['announcementText']
-            temp_dict[index]['Refresh'] = valuesDict['announcementRefresh']
-            temp_dict[index]['nextRefresh'] = str(dt.datetime.now())
+            temp_dict[index]['Refresh']      = valuesDict['announcementRefresh']
+            temp_dict[index]['nextRefresh']  = unicode(dt.datetime.now())
 
         # If key exists, save to dict.
         elif valuesDict['editFlag']:
-            index = int(valuesDict['announcementIndex'])
-            temp_dict[index]['Name'] = valuesDict['announcementName']
+            index                            = int(valuesDict['announcementIndex'])
+            temp_dict[index]['Name']         = valuesDict['announcementName']
             temp_dict[index]['Announcement'] = valuesDict['announcementText']
-            temp_dict[index]['Refresh'] = valuesDict['announcementRefresh']
+            temp_dict[index]['Refresh']      = valuesDict['announcementRefresh']
 
         # User has created a new announcement with a name already in use
         else:
             index = self.createAnnouncementId(temp_dict)
-            temp_dict[index] = {}
-            temp_dict[index]['Name'] = valuesDict['announcementName'] + u'*'
+            temp_dict[index]                 = {}
+            temp_dict[index]['Name']         = valuesDict['announcementName'] + u'*'
             temp_dict[index]['Announcement'] = valuesDict['announcementText']
-            temp_dict[index]['Refresh'] = valuesDict['announcementRefresh']
-            temp_dict[index]['nextRefresh'] = str(dt.datetime.now())
+            temp_dict[index]['Refresh']      = valuesDict['announcementRefresh']
+            temp_dict[index]['nextRefresh']  = unicode(dt.datetime.now())
             self.logger.error(u"Duplicate announcement name found.")
 
         # Set the dict element equal to the new list
@@ -810,7 +817,7 @@ class Plugin(indigo.PluginBase):
             infile = ast.literal_eval(infile)
 
             announcement = self.substitute(infile[devId][int(valuesDict['announcementList'])]['Announcement'])
-            result = self.substitutionRegex(announcement)
+            result       = self.substitutionRegex(announcement)
             indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
@@ -826,14 +833,14 @@ class Plugin(indigo.PluginBase):
         """
         Indigo action for speaking any device state or variable value.
         """
-        indigo.server.log('speakAnnouncementAction() called.')
+        self.logger.debug('speakAnnouncementAction() called.')
 
         item_source   = int(pluginAction.props['announcementDeviceToRefresh'])
         item_to_speak = pluginAction.props['announcementToSpeak']
 
         try:
             if item_source in indigo.devices.keys():
-                announcement = str(indigo.devices[item_source].states[item_to_speak])
+                announcement = unicode(indigo.devices[item_source].states[item_to_speak])
                 indigo.server.speak(announcement, waitUntilDone=False)
             else:
                 announcement = indigo.variables[item_source].value

@@ -1,8 +1,14 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v0.4.01
+- Updates plugin update checker to use curl to overcome outdated security of
+  Apple's Python install.
+
 v0.4.0
-- Creates Speak Announcment Action item.
-- Increases allowable datetime modifiers to include period, space and comma.
+- Moves plugin to Beta.
+- Creates Speak Announcement Action item.
+- Adds period, space and comma to allowable datetime and current time
+  modifiers.
 - Increments to Indigo API 2.0.
 
 v0.3.7
