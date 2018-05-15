@@ -1,5 +1,13 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v0.5.01
+- Now requires Indigo 7.
+- Updates devices states using Indigo API 2.0
+- Updates docstrings to Sphinx standard.
+- Fixes minor bug in setting of announcement refresh time when new
+  announcements are first created.
+- Code refinements.
+
 v0.4.01
 - Updates plugin update checker to use curl to overcome outdated security of
   Apple's Python install.

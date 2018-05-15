@@ -65,40 +65,40 @@
                 <Label>Refresh Interval</Label>
             </Field>
 
-            <Field id="speakAnnouncement" type="button" tooltip="Please select an announcement from the list above or enter text into the Announcement field to test speech. This feature will only work on the Indigo server machine.">
+            <Field id="announcementSpeak" type="button" tooltip="Please select an announcement from the list above or enter text into the Announcement field to test speech. This feature will only work on the Indigo server machine.">
                 <Label/>
                 <Title>Speak Announcement</Title>
-                <CallbackMethod>speakAnnouncement</CallbackMethod>
+                <CallbackMethod>announcementSpeak</CallbackMethod>
             </Field>
 
-            <Field id="saveAnnouncement" type="button" tooltip="Please complete all fields and then click Save Announcement.">
+            <Field id="announcementSave" type="button" tooltip="Please complete all fields and then click Save Announcement.">
                 <Label/>
                 <Title>Save Announcement</Title>
-                <CallbackMethod>saveAnnouncement</CallbackMethod>
+                <CallbackMethod>announcementSave</CallbackMethod>
             </Field>
 
-            <Field id="editAnnouncement" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Edit Announcement.">
+            <Field id="announcementEdit" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Edit Announcement.">
                 <Label/>
                 <Title>Edit Announcement</Title>
-                <CallbackMethod>editAnnouncement</CallbackMethod>
+                <CallbackMethod>announcementEdit</CallbackMethod>
             </Field>
 
-            <Field id="deleteAnnouncement" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Delete Announcement. CAUTION! Announcements are deleted instantly and permanently.">
+            <Field id="announcementDelete" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Delete Announcement. CAUTION! Announcements are deleted instantly and permanently.">
                 <Label/>
                 <Title>Delete Announcement</Title>
-                <CallbackMethod>deleteAnnouncement</CallbackMethod>
+                <CallbackMethod>announcementDelete</CallbackMethod>
             </Field>
 
-            <Field id="duplicateAnnouncement" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Duplicate Announcement to create a copy of an existing announcement.">
+            <Field id="announcementDuplicate" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Duplicate Announcement to create a copy of an existing announcement.">
                 <Label/>
                 <Title>Duplicate Announcement</Title>
-                <CallbackMethod>duplicateAnnouncement</CallbackMethod>
+                <CallbackMethod>announcementDuplicate</CallbackMethod>
             </Field>
 
-            <Field id="clearAnnouncement" type="button" tooltip="Remove all text from the text fields.">
+            <Field id="announcementClear" type="button" tooltip="Remove all text from the text fields.">
                 <Label/>
                 <Title>Clear Fields</Title>
-                <CallbackMethod>clearAnnouncement</CallbackMethod>
+                <CallbackMethod>announcementClear</CallbackMethod>
             </Field>
 
             <!-- Substitution Generator -->

@@ -3,7 +3,7 @@
     <SupportURL>http://google.com</SupportURL>
     <Action id="refreshAnnouncementData" uiPath="DeviceActions">
         <Name>Refresh Announcement</Name>
-        <CallbackMethod>refreshAnnouncementAction</CallbackMethod>
+        <CallbackMethod>announcementRefreshAction</CallbackMethod>
         <ConfigUI>
 
 			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
@@ -27,9 +27,9 @@
 
         </ConfigUI>
     </Action>
-    <Action id="speakAnnouncement" uiPath="DeviceActions">
+    <Action id="announcementSpeak" uiPath="DeviceActions">
         <Name>Speak Announcement</Name>
-        <CallbackMethod>speakAnnouncementAction</CallbackMethod>
+        <CallbackMethod>announcementSpeakAction</CallbackMethod>
         <ConfigUI>
 
 			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
