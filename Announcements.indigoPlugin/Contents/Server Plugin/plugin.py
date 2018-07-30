@@ -49,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.5.01'
+__version__   = '0.5.02'
 
 # =============================================================================
 
@@ -65,6 +65,9 @@ class Plugin(indigo.PluginBase):
 
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
+
+        self.pluginIsInitializing = True
+        self.pluginIsShuttingDown = False
 
         updater_url = "https://raw.githubusercontent.com/DaveL17/Announcements/master/Announcements_version.html"
         self.updater = indigoPluginUpdateChecker.updateChecker(self, updater_url)
@@ -101,6 +104,8 @@ class Plugin(indigo.PluginBase):
         #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
         # except:
         #     pass
+
+        self.pluginIsInitializing = False
 
     def __del__(self):
         indigo.PluginBase.__del__(self)
@@ -677,15 +682,12 @@ class Plugin(indigo.PluginBase):
                     if intro_value != dev.states['intro']:
                         self.logger.debug(u"Updating intro to: {0}".format(intro_value))
                         states_list.append({'key': 'intro', 'value': intro_value})
-                        # dev.updateStateOnServer('intro', value=intro_value)
 
                     if outro_value != dev.states['outro']:
                         self.logger.debug(u"Updating outro to: {0}".format(outro_value))
                         states_list.append({'key': 'outro', 'value': outro_value})
-                        # dev.updateStateOnServer('outro', value=outro_value)
 
                     states_list.append({'key': 'onOffState', 'value': True, 'uiValue': u" "})
-                    # dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
                     dev.updateStatesOnServer(states_list)
 
                 elif dev.deviceTypeId == 'announcementsDevice':
@@ -715,7 +717,6 @@ class Plugin(indigo.PluginBase):
                                 announcement = self.substitute(infile[dev.id][key]['Announcement'])
                                 result = self.substitutionRegex(announcement)
                                 states_list.append({'key': state_name, 'value': result})
-                                # dev.updateStateOnServer(state_name, value=result)
 
                                 # Set the next refresh time
                                 next_update = now + dt.timedelta(minutes=int(infile[dev.id][key]['Refresh']))
@@ -723,7 +724,6 @@ class Plugin(indigo.PluginBase):
                                 self.logger.debug(u"{0} updated.".format(infile[dev.id][key]['Name']))
 
                         states_list.append({'key': 'onOffState', 'value': True, 'uiValue': u" "})
-                        # dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
                         dev.updateStatesOnServer(states_list)
 
                     except KeyError as sub_error:

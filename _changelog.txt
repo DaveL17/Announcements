@@ -1,5 +1,10 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v0.5.02
+- Fixes bug in naming of PluginConfig.xml (which caused problems on systems set
+  up as case sensitive.
+- Code refinements.
+
 v0.5.01
 - Now requires Indigo 7.
 - Updates devices states using Indigo API 2.0
