@@ -1,5 +1,11 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.01
+- Takes plugin out of beta.
+- Fixes bug where speak action returned all indigo devices and variables
+  instead of only plugin devices.
+- Code refinements.
+
 v0.5.02
 - Fixes bug in naming of PluginConfig.xml (which caused problems on systems set
   up as case sensitive.

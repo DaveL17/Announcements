@@ -20,7 +20,7 @@
 
     <MenuItem id="refreshAnnouncements">
         <Name>Refresh Announcements</Name>
-        <CallbackMethod>announcementUpdateStates</CallbackMethod>
+        <CallbackMethod>announcement_update_states_now</CallbackMethod>
     </MenuItem>
 
 </MenuItems>

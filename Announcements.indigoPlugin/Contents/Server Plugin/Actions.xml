@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <Actions>
-    <SupportURL>http://google.com</SupportURL>
+
+    <SupportURL>http://github.com/DaveL17/Announcements/wiki</SupportURL>
+
     <Action id="refreshAnnouncementData" uiPath="DeviceActions">
         <Name>Refresh Announcement</Name>
         <CallbackMethod>announcementRefreshAction</CallbackMethod>
@@ -27,13 +29,14 @@
 
         </ConfigUI>
     </Action>
+
     <Action id="announcementSpeak" uiPath="DeviceActions">
         <Name>Speak Announcement</Name>
         <CallbackMethod>announcementSpeakAction</CallbackMethod>
         <ConfigUI>
 
 			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
-				<Label>Use this Action Item to select an individual announcement to be spoken. You must first select a device or variable to speak and then the select from the list of announcements for that item.</Label>
+				<Label>Use this Action Item to select an individual announcement to be spoken. You must first select an announcement device and then select from the list of announcements for that device.</Label>
 			</Field>
 
             <Field id="announcementDeviceToRefresh" type="menu" fontColor="black" fontSize="regular">
@@ -46,10 +49,6 @@
                 <Label>Item to Speak:</Label>
                 <List class="self" filter="" method="generatorAnnouncementList" dynamicReload="true"/>
             </Field>
-
-			<Field id="exampleLabel" type="label" fontColor="black" fontSize="small" alignWithControl="true">
-				<Label>Only this announcement will be refreshed when the Action Item is called. To refresh more announcements, create additional Action Items.</Label>
-			</Field>
 
         </ConfigUI>
     </Action>

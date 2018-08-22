@@ -71,34 +71,34 @@
                 <CallbackMethod>announcementSpeak</CallbackMethod>
             </Field>
 
-            <Field id="announcementSave" type="button" tooltip="Please complete all fields and then click Save Announcement.">
+            <Field id="announcement_save" type="button" tooltip="Please complete all fields and then click Save Announcement.">
                 <Label/>
                 <Title>Save Announcement</Title>
-                <CallbackMethod>announcementSave</CallbackMethod>
+                <CallbackMethod>announcement_save</CallbackMethod>
             </Field>
 
-            <Field id="announcementEdit" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Edit Announcement.">
+            <Field id="announcement_edit" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Edit Announcement.">
                 <Label/>
                 <Title>Edit Announcement</Title>
-                <CallbackMethod>announcementEdit</CallbackMethod>
+                <CallbackMethod>announcement_edit</CallbackMethod>
             </Field>
 
-            <Field id="announcementDelete" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Delete Announcement. CAUTION! Announcements are deleted instantly and permanently.">
+            <Field id="announcement_delete" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Delete Announcement. CAUTION! Announcements are deleted instantly and permanently.">
                 <Label/>
                 <Title>Delete Announcement</Title>
-                <CallbackMethod>announcementDelete</CallbackMethod>
+                <CallbackMethod>announcement_delete</CallbackMethod>
             </Field>
 
-            <Field id="announcementDuplicate" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Duplicate Announcement to create a copy of an existing announcement.">
+            <Field id="announcement_duplicate" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Duplicate Announcement to create a copy of an existing announcement.">
                 <Label/>
                 <Title>Duplicate Announcement</Title>
-                <CallbackMethod>announcementDuplicate</CallbackMethod>
+                <CallbackMethod>announcement_duplicate</CallbackMethod>
             </Field>
 
-            <Field id="announcementClear" type="button" tooltip="Remove all text from the text fields.">
+            <Field id="announcement_clear" type="button" tooltip="Remove all text from the text fields.">
                 <Label/>
                 <Title>Clear Fields</Title>
-                <CallbackMethod>announcementClear</CallbackMethod>
+                <CallbackMethod>announcement_clear</CallbackMethod>
             </Field>
 
             <!-- Substitution Generator -->
@@ -126,7 +126,7 @@
             <Field id="subGeneratorButton" type="button" tooltip="Generate the substitution.">
                 <Label/>
                 <Title>Generate Substitution</Title>
-                <CallbackMethod>generatorSubstitutions</CallbackMethod>
+                <CallbackMethod>generator_substitutions</CallbackMethod>
             </Field>
 
             <!-- Hidden Controls -->
@@ -178,7 +178,7 @@
 
             <Field id="morningStart" type="menu" defaultValue="5">
                 <Label>Morning Starts at:</Label>
-                <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
+                <List class="self" filter="" method="generator_time" dynamicReload="true"/>
             </Field>
 
             <Field id="morningMessageIn" type="textfield" defaultValue="Good morning">
@@ -191,7 +191,7 @@
 
             <Field id="afternoonStart" type="menu" defaultValue="12">
                 <Label>Afternoon Starts at:</Label>
-                <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
+                <List class="self" filter="" method="generator_time" dynamicReload="true"/>
             </Field>
 
             <Field id="afternoonMessageIn" type="textfield" defaultValue="Good afternoon">
@@ -204,7 +204,7 @@
 
             <Field id="eveningStart" type="menu" defaultValue="17">
                 <Label>Evening Starts at:</Label>
-                <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
+                <List class="self" filter="" method="generator_time" dynamicReload="true"/>
             </Field>
 
             <Field id="eveningMessageIn" type="textfield" defaultValue="Good evening">
@@ -217,7 +217,7 @@
 
             <Field id="nightStart" type="menu" defaultValue="22">
                 <Label>Night Starts at:</Label>
-                <List class="self" filter="" method="generatorTime" dynamicReload="true"/>
+                <List class="self" filter="" method="generator_time" dynamicReload="true"/>
             </Field>
 
             <Field id="nightMessageIn" type="textfield" defaultValue="Good night">

@@ -49,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '0.5.02'
+__version__   = '1.0.01'
 
 # =============================================================================
 
@@ -69,13 +69,14 @@ class Plugin(indigo.PluginBase):
         self.pluginIsInitializing = True
         self.pluginIsShuttingDown = False
 
-        updater_url = "https://raw.githubusercontent.com/DaveL17/Announcements/master/Announcements_version.html"
-        self.updater = indigoPluginUpdateChecker.updateChecker(self, updater_url)
-
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.indigo_log_handler.setLevel(self.debugLevel)
+
+        updater_url  = "https://raw.githubusercontent.com/DaveL17/Announcements/master/Announcements_version.html"
+        self.updater = indigoPluginUpdateChecker.updateChecker(self, updater_url)
+
         self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
         self.logger.debug(u"Plugin refresh interval: {0}".format(self.update_frequency))
 
@@ -125,7 +126,7 @@ class Plugin(indigo.PluginBase):
         indigo.server.log(u"Debugging set to: {0}".format(debug_label[self.debugLevel]))
 
         # Update the devices to reflect any changes
-        self.announcementUpdateStates()
+        self.announcement_update_states()
 
     def deviceStartComm(self, dev):
 
@@ -187,7 +188,7 @@ class Plugin(indigo.PluginBase):
                 self.sleep(1)
 
                 self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
-                self.announcementUpdateStates()
+                self.announcement_update_states()
                 self.sleep(self.update_frequency)
 
         except self.StopThread:
@@ -245,12 +246,12 @@ class Plugin(indigo.PluginBase):
                 error_msg_dict['showAlertText'] = u"Message Start Time Error\n\nEach start time must be greater than the preceding one (morning < afternoon < evening < night)."
                 return False, valuesDict, error_msg_dict
 
-        self.announcementUpdateStates()
+        self.announcement_update_states()
         return True, valuesDict
 
     # ================ Announcement Plugin Methods =================
 
-    def announcementClear(self, valuesDict, typeId="", targetId=0):
+    def announcement_clear(self, valuesDict, typeId="", targetId=0):
         """
         Clear announcement data from input field
 
@@ -268,9 +269,10 @@ class Plugin(indigo.PluginBase):
             valuesDict[key] = ''
 
         valuesDict['editFlag'] = False
+
         return valuesDict
 
-    def announcementCreateId(self, temp_dict):
+    def announcement_create_id(self, temp_dict):
         """
         Create a unique ID number for the announcement
 
@@ -292,7 +294,7 @@ class Plugin(indigo.PluginBase):
 
         return index
 
-    def announcementDelete(self, valuesDict, typeId, devId):
+    def announcement_delete(self, valuesDict, typeId, devId):
         """
         Delete the highlighted announcement
 
@@ -326,7 +328,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
-    def announcementDuplicate(self, valuesDict, typeId, devId):
+    def announcement_duplicate(self, valuesDict, typeId, devId):
         """
         Create a duplicate of the selected announcement
 
@@ -352,7 +354,7 @@ class Plugin(indigo.PluginBase):
 
         # Create a new announcement.
         temp_dict = infile[devId]
-        new_index = self.announcementCreateId(temp_dict)
+        new_index = self.announcement_create_id(temp_dict)
         temp_dict[new_index]                 = {}
         temp_dict[new_index]['Name']         = infile[devId][index]['Name'] + u" copy"
         temp_dict[new_index]['Announcement'] = infile[devId][index]['Announcement']
@@ -368,7 +370,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
-    def announcementEdit(self, valuesDict, typeId, devId):
+    def announcement_edit(self, valuesDict, typeId, devId):
         """
         Load the selected announcement for editing
 
@@ -430,10 +432,10 @@ class Plugin(indigo.PluginBase):
         for key in announcement_dict.keys():
             if announcement_dict[key]['Name'] == announcement_name.replace('_', ' '):
                 announcement = self.substitute(infile[device_id][key]['Announcement'])
-                result = self.substitutionRegex(announcement)
+                result = self.substitution_regex(announcement)
                 dev.updateStateOnServer(announcement_name, value=result)
 
-    def announcementSave(self, valuesDict, typeId, devId):
+    def announcement_save(self, valuesDict, typeId, devId):
         """
         Save the current announcement
 
@@ -506,7 +508,7 @@ class Plugin(indigo.PluginBase):
 
         # If new announcement, create unique id, then save to dict.
         if not valuesDict['editFlag'] and valuesDict['announcementName'] not in announcement_name_list:
-            index = self.announcementCreateId(temp_dict)
+            index = self.announcement_create_id(temp_dict)
             temp_dict[index]                 = {}
             temp_dict[index]['Name']         = valuesDict['announcementName']
             temp_dict[index]['Announcement'] = valuesDict['announcementText']
@@ -522,7 +524,7 @@ class Plugin(indigo.PluginBase):
 
         # User has created a new announcement with a name already in use
         else:
-            index = self.announcementCreateId(temp_dict)
+            index = self.announcement_create_id(temp_dict)
             temp_dict[index]                 = {}
             temp_dict[index]['Name']         = valuesDict['announcementName'] + u'*'
             temp_dict[index]['Announcement'] = valuesDict['announcementText']
@@ -551,7 +553,7 @@ class Plugin(indigo.PluginBase):
 
         Called when user clicks the Speak Announcement button. If an announcement is
         selected in the list, that is the announcement that will be spoken, if there is
-        announcement data in the textfields, that will be what is spoken.
+        announcement data in the text fields, that will be what is spoken.
 
         -----
 
@@ -565,7 +567,7 @@ class Plugin(indigo.PluginBase):
 
         # The user has entered a value in the announcement field. Speak that.
         if len(valuesDict['announcementText']) > 0:
-            result = self.substitutionRegex(self.substitute(valuesDict['announcementText']))
+            result = self.substitution_regex(self.substitute(valuesDict['announcementText']))
             indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
@@ -580,7 +582,7 @@ class Plugin(indigo.PluginBase):
             infile = ast.literal_eval(infile)
 
             announcement = self.substitute(infile[devId][int(valuesDict['announcementList'])]['Announcement'])
-            result       = self.substitutionRegex(announcement)
+            result       = self.substitution_regex(announcement)
             indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
@@ -616,7 +618,7 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             self.logger.warning(u"Unable to speak {0} value.".format(item_to_speak))
 
-    def announcementUpdateStates(self):
+    def announcement_update_states(self, force=False):
         """
         Update the state values of each announcement
 
@@ -715,13 +717,19 @@ class Plugin(indigo.PluginBase):
                             if now >= update_time:
                                 # Update the announcement text.
                                 announcement = self.substitute(infile[dev.id][key]['Announcement'])
-                                result = self.substitutionRegex(announcement)
+                                result = self.substitution_regex(announcement)
                                 states_list.append({'key': state_name, 'value': result})
 
                                 # Set the next refresh time
                                 next_update = now + dt.timedelta(minutes=int(infile[dev.id][key]['Refresh']))
                                 infile[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
                                 self.logger.debug(u"{0} updated.".format(infile[dev.id][key]['Name']))
+
+                            elif force:
+                                # Force update the announcement text.
+                                announcement = self.substitute(infile[dev.id][key]['Announcement'])
+                                result = self.substitution_regex(announcement)
+                                states_list.append({'key': state_name, 'value': result})
 
                         states_list.append({'key': 'onOffState', 'value': True, 'uiValue': u" "})
                         dev.updateStatesOnServer(states_list)
@@ -733,6 +741,9 @@ class Plugin(indigo.PluginBase):
         # Open the announcements file and save the updated dict.
         with open(self.announcements_file, 'w') as outfile:
             outfile.write(u"{0}".format(infile))
+
+    def announcement_update_states_now(self):
+        self.announcement_update_states(force=True)
 
     def checkVersionNow(self):
         """
@@ -783,11 +794,11 @@ class Plugin(indigo.PluginBase):
             except Exception as sub_error:
                 self.logger.critical(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
 
-    def formatDigits(self, match):
+    def format_digits(self, match):
         """
         Format announcement digits based on announcement criteria
 
-        The formatDigits function determines the proper formatting routine to
+        The format_digits function determines the proper formatting routine to
         use when converting target values to the specified format. It sends the
         target value to the proper function for formatting.
 
@@ -804,26 +815,26 @@ class Plugin(indigo.PluginBase):
 
         # Current time conversions specified with ct: ...
         if match2.startswith('ct:'):
-            result = self.formatCurrentTime(match1, match2)
+            result = self.format_current_time(match1, match2)
 
         # Datetime conversions specified with dt: ...
         elif match2.startswith('dt:'):
-            result = self.formatDatetime(match1, match2)
+            result = self.format_datetime(match1, match2)
 
         # Number conversions specified with n: ...
         elif match2.startswith('n:'):
-            result = self.formatNumber(match1, match2)
+            result = self.format_number(match1, match2)
 
         else:
             result = u"{0} {1}".format(match1, match2)
 
         return result
 
-    def formatCurrentTime(self, match1, match2):
+    def format_current_time(self, match1, match2):
         """
         Format announcement times based on announcement criteria
 
-        The formatCurrentTime function is used to create a formatted version
+        The format_current_time function is used to create a formatted version
         of the current time.
 
         -----
@@ -845,11 +856,11 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
-    def formatDatetime(self, match1, match2):
+    def format_datetime(self, match1, match2):
         """
         Format announcement datetime based on announcement criteria
 
-        The formatDatetime function is used to format the string based on common
+        The format_datetime function is used to format the string based on common
         Python datetime format specifiers.
 
         -----
@@ -871,11 +882,11 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
-    def formatNumber(self, match1, match2):
+    def format_number(self, match1, match2):
         """
         Format announcement number based on announcement criteria
 
-        The formatNumber function is used to format the string based on common
+        The format_number function is used to format the string based on common
         Python numeric format specifiers
 
         -----
@@ -895,8 +906,6 @@ class Plugin(indigo.PluginBase):
 
         except ValueError:
             return "{0} {1}".format(match1, match2)
-
-    # Note that the following method may no longer be needed.
 
     def generatorAnnouncementList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
@@ -958,7 +967,7 @@ class Plugin(indigo.PluginBase):
         :return list result:
         """
 
-        return self.Fogbert.deviceAndVariableList()
+        return [(dev.id, dev.name) for dev in indigo.devices.iter("com.fogbert.indigoplugin.announcements")]
 
     def generatorList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
@@ -1033,11 +1042,11 @@ class Plugin(indigo.PluginBase):
         except (KeyError, ValueError):
             return [(0, 'Pick a Device or Variable')]
 
-    def generatorSubstitutions(self, valuesDict, typeId="", targetId=0):
+    def generator_substitutions(self, valuesDict, typeId="", targetId=0):
         """
         Generate an Indigo substitution string
 
-        The generatorSubstitutions function is used with the Substitution Generator.
+        The generator_substitutions function is used with the Substitution Generator.
         It is the callback that's used to create the Indigo substitution
         construct.
 
@@ -1066,11 +1075,11 @@ class Plugin(indigo.PluginBase):
 
         except ValueError:
             announcement = self.substitute(valuesDict['textfield1'])
-            result       = self.substitutionRegex(announcement)
+            result       = self.substitution_regex(announcement)
             self.logger.info(u"Substitution Generator announcement: \"{0}\"".format(result))
             return valuesDict
 
-    def generatorTime(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def generator_time(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of times for plugin control menus
 
@@ -1105,7 +1114,7 @@ class Plugin(indigo.PluginBase):
 
         pass
 
-    def substitutionRegex(self, announcement):
+    def substitution_regex(self, announcement):
         """
         Regex method for formatting substitutions
 
@@ -1117,5 +1126,5 @@ class Plugin(indigo.PluginBase):
         :return str result:
         """
 
-        return re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.formatDigits, announcement)
+        return re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.format_digits, announcement)
 
