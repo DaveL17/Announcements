@@ -24,6 +24,7 @@ from dateutil import parser
 import logging
 import os
 import re
+import shutil
 import string
 import sys
 
@@ -49,14 +50,12 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.01'
+__version__   = '1.0.02'
 
 # =============================================================================
 
 kDefaultPluginPrefs = {
     u'pluginRefresh': "15",
-    u'updaterEmailsEnabled': False,
-    u'updaterEmail': "",
     u'showDebugLevel': "30",
 }
 
@@ -74,9 +73,6 @@ class Plugin(indigo.PluginBase):
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.indigo_log_handler.setLevel(self.debugLevel)
 
-        updater_url  = "https://raw.githubusercontent.com/DaveL17/Announcements/master/Announcements_version.html"
-        self.updater = indigoPluginUpdateChecker.updateChecker(self, updater_url)
-
         self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
         self.logger.debug(u"Plugin refresh interval: {0}".format(self.update_frequency))
 
@@ -89,16 +85,21 @@ class Plugin(indigo.PluginBase):
 
         # =====================================================================
 
-        # Establish data folder if it doesn't exist.
-        working_directory = u"{0}/Announcements Plugin/".format(os.path.expanduser('~'))
-        if not os.path.exists(working_directory):
-            os.makedirs(working_directory)
+        # Establish the default announcements file.
+        working_directory       = u"{0}/Announcements Plugin/".format(os.path.expanduser('~'))
+        old_file                = u"{0}announcements.txt".format(working_directory)
+        self.announcements_file = u"{0}/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt".format(indigo.server.getInstallFolderPath())
 
-        # Establish announcements file if it doesn't exist.
-        self.announcements_file = u"{0}announcements.txt".format(working_directory)
-        if not os.path.isfile(self.announcements_file):
+        # If it exists under the old location, let's move it over.
+        if os.path.isfile(old_file):
+            os.rename(old_file, self.announcements_file)
+            self.sleep(1)
+            shutil.rmtree(working_directory, ignore_errors=True)
+
+        # If a new install, lets establish a new empty dict.
+        else:
             with open(self.announcements_file, 'w+') as outfile:
-                outfile.write(u'{}')
+                outfile.write(u"{}")
             self.sleep(1)  # Wait a moment to let the system catch up.
 
         # try:
@@ -111,12 +112,14 @@ class Plugin(indigo.PluginBase):
     def __del__(self):
         indigo.PluginBase.__del__(self)
 
-    # ======================= Indigo Methods =======================
-
+    # =============================================================================
+    # ============================== Indigo Methods ===============================
+    # =============================================================================
     def closedDeviceConfigUi(self, valuesDict, userCancelled, typeId, devId):
 
         pass
 
+    # =============================================================================
     def closedPrefsConfigUi(self, valuesDict, userCancelled):
 
         debug_label = {10: u"Debugging Messages", 20: u"Informational Messages", 30: u"Warning Messages", 40: u"Error Messages", 50: u"Critical Errors Only"}
@@ -128,15 +131,18 @@ class Plugin(indigo.PluginBase):
         # Update the devices to reflect any changes
         self.announcement_update_states()
 
+    # =============================================================================
     def deviceStartComm(self, dev):
 
         dev.stateListOrDisplayStateIdChanged()
         dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
 
+    # =============================================================================
     def deviceStopComm(self, dev):
 
         dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
 
+    # =============================================================================
     def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
 
         # Set the device to disabled while it's being edited.
@@ -149,6 +155,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def getDeviceStateList(self, dev):
 
         dev_id  = dev.id
@@ -180,11 +187,11 @@ class Plugin(indigo.PluginBase):
 
         return default_states_list
 
+    # =============================================================================
     def runConcurrentThread(self):
 
         try:
             while True:
-                self.updater.checkVersionPoll()
                 self.sleep(1)
 
                 self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
@@ -194,9 +201,8 @@ class Plugin(indigo.PluginBase):
         except self.StopThread:
             pass
 
+    # =============================================================================
     def startup(self):
-
-        self.updater.checkVersionPoll()
 
         # ============= Delete Out of Date Announcements ===============
 
@@ -221,10 +227,12 @@ class Plugin(indigo.PluginBase):
         with open(self.announcements_file, 'w') as outfile:
             outfile.write(u"{0}".format(infile))
 
+    # =============================================================================
     def validatePrefsConfigUi(self, valuesDict):
 
         return True, valuesDict
 
+    # =============================================================================
     def validateDeviceConfigUi(self, valuesDict, typeId, devId):
 
         error_msg_dict = indigo.Dict()
@@ -249,8 +257,9 @@ class Plugin(indigo.PluginBase):
         self.announcement_update_states()
         return True, valuesDict
 
-    # ================ Announcement Plugin Methods =================
-
+    # =============================================================================
+    # ============================== Plugin Methods ===============================
+    # =============================================================================
     def announcement_clear(self, valuesDict, typeId="", targetId=0):
         """
         Clear announcement data from input field
@@ -272,6 +281,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def announcement_create_id(self, temp_dict):
         """
         Create a unique ID number for the announcement
@@ -294,6 +304,7 @@ class Plugin(indigo.PluginBase):
 
         return index
 
+    # =============================================================================
     def announcement_delete(self, valuesDict, typeId, devId):
         """
         Delete the highlighted announcement
@@ -328,6 +339,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def announcement_duplicate(self, valuesDict, typeId, devId):
         """
         Create a duplicate of the selected announcement
@@ -370,6 +382,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def announcement_edit(self, valuesDict, typeId, devId):
         """
         Load the selected announcement for editing
@@ -404,6 +417,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def announcementRefreshAction(self, pluginAction):
         """
         Refresh an announcement in response to Indigo Action call
@@ -435,6 +449,7 @@ class Plugin(indigo.PluginBase):
                 result = self.substitution_regex(announcement)
                 dev.updateStateOnServer(announcement_name, value=result)
 
+    # =============================================================================
     def announcement_save(self, valuesDict, typeId, devId):
         """
         Save the current announcement
@@ -547,6 +562,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def announcementSpeak(self, valuesDict, typeId, devId):
         """
         Speak the selected announcement
@@ -594,6 +610,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def announcementSpeakAction(self, pluginAction):
         """
         Speak an announcement in response to an Indigo action item
@@ -618,6 +635,7 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             self.logger.warning(u"Unable to speak {0} value.".format(item_to_speak))
 
+    # =============================================================================
     def announcement_update_states(self, force=False):
         """
         Update the state values of each announcement
@@ -742,22 +760,11 @@ class Plugin(indigo.PluginBase):
         with open(self.announcements_file, 'w') as outfile:
             outfile.write(u"{0}".format(infile))
 
+    # =============================================================================
     def announcement_update_states_now(self):
         self.announcement_update_states(force=True)
 
-    def checkVersionNow(self):
-        """
-        Perform a check to see if user has most current version
-
-        The checkVersionNow() method will call the Indigo Plugin Update
-        Checker based on a user request.
-
-        -----
-
-        """
-
-        self.updater.checkVersionNow()
-
+    # =============================================================================
     def commsKillAll(self):
         """
         Disable communication for all plugin-defined devices
@@ -776,6 +783,7 @@ class Plugin(indigo.PluginBase):
             except Exception as sub_error:
                 self.logger.critical(u"Exception when trying to kill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
 
+    # =============================================================================
     def commsUnkillAll(self):
         """
         Enable communication for all plugin-defined devices
@@ -794,6 +802,7 @@ class Plugin(indigo.PluginBase):
             except Exception as sub_error:
                 self.logger.critical(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
 
+    # =============================================================================
     def format_digits(self, match):
         """
         Format announcement digits based on announcement criteria
@@ -830,6 +839,7 @@ class Plugin(indigo.PluginBase):
 
         return result
 
+    # =============================================================================
     def format_current_time(self, match1, match2):
         """
         Format announcement times based on announcement criteria
@@ -856,6 +866,7 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
+    # =============================================================================
     def format_datetime(self, match1, match2):
         """
         Format announcement datetime based on announcement criteria
@@ -882,6 +893,7 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
+    # =============================================================================
     def format_number(self, match1, match2):
         """
         Format announcement number based on announcement criteria
@@ -907,6 +919,7 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             return "{0} {1}".format(match1, match2)
 
+    # =============================================================================
     def generatorAnnouncementList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of states for Indigo controls
@@ -932,6 +945,7 @@ class Plugin(indigo.PluginBase):
         except KeyError:
             return [('None', 'None')]
 
+    # =============================================================================
     def generatorDeviceList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of plugin-owned devices.
@@ -950,6 +964,7 @@ class Plugin(indigo.PluginBase):
 
         return self.Fogbert.deviceList(filter='self')
 
+    # =============================================================================
     def generatorDevVar(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of Indigo devices and variables.
@@ -969,6 +984,7 @@ class Plugin(indigo.PluginBase):
 
         return [(dev.id, dev.name) for dev in indigo.devices.iter("com.fogbert.indigoplugin.announcements")]
 
+    # =============================================================================
     def generatorList(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of configured announcements
@@ -1012,6 +1028,7 @@ class Plugin(indigo.PluginBase):
 
         return sorted(announcement_list, key=lambda (k, val): unicode.lower(val))
 
+    # =============================================================================
     def generatorStateOrValue(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Return a list of device states or variable value for selected device
@@ -1042,6 +1059,7 @@ class Plugin(indigo.PluginBase):
         except (KeyError, ValueError):
             return [(0, 'Pick a Device or Variable')]
 
+    # =============================================================================
     def generator_substitutions(self, valuesDict, typeId="", targetId=0):
         """
         Generate an Indigo substitution string
@@ -1079,6 +1097,7 @@ class Plugin(indigo.PluginBase):
             self.logger.info(u"Substitution Generator announcement: \"{0}\"".format(result))
             return valuesDict
 
+    # =============================================================================
     def generator_time(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of times for plugin control menus
@@ -1097,6 +1116,7 @@ class Plugin(indigo.PluginBase):
 
         return [(hour, u"{0:02.0f}:00".format(hour)) for hour in range(0, 24)]
 
+    # =============================================================================
     def refreshFields(self, filter="", typeId="", targetId=0):
         """
         Dummy callback to force dynamic control refreshes
@@ -1114,6 +1134,7 @@ class Plugin(indigo.PluginBase):
 
         pass
 
+    # =============================================================================
     def substitution_regex(self, announcement):
         """
         Regex method for formatting substitutions
@@ -1127,4 +1148,5 @@ class Plugin(indigo.PluginBase):
         """
 
         return re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.format_digits, announcement)
+    # =============================================================================
 

@@ -13,11 +13,6 @@
 
     <MenuItem id="titleSeparator" type="separator"/>
 
-    <MenuItem id="checkVersionNow">
-        <Name>Check for Plugin Updates</Name>
-        <CallbackMethod>checkVersionNow</CallbackMethod>
-    </MenuItem>
-
     <MenuItem id="refreshAnnouncements">
         <Name>Refresh Announcements</Name>
         <CallbackMethod>announcement_update_states_now</CallbackMethod>

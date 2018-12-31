@@ -10,7 +10,7 @@
 		<Label>Developed by DaveL17</Label>
 	</Field>
 
-	<Field id="space00" type="label"/>
+	<!--<Field id="space00" type="label"/>-->
 
 	<Field id="space01" type="label" alignText="right">
 	<Label>Plugin Settings</Label>
@@ -25,9 +25,6 @@
     <Field id="refreshLabel" type="label" fontSize="small" alignWithControl="True">
         <Label>Enter the number of seconds between announcement refreshes.</Label>
     </Field>
-
-    <!-- Notifications Template -->
-    <Template file="DLFramework/template_notifications.xml"/>
 
     <!-- Debugging Template -->
     <Template file="DLFramework/template_debugging.xml"/>
