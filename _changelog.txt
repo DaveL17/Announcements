@@ -1,5 +1,10 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.03
+- Fixes bug when a Speak Announcement Action was called when there was no
+  announcement to speak.
+- Refines logging.
+
 v1.0.02
 - Removes plugin update notifications.
 - Moves announcement settings file to Indigo plugin preferences directory.

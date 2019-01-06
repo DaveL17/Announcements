@@ -50,7 +50,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.02'
+__version__   = '1.0.03'
 
 # =============================================================================
 
@@ -635,6 +635,9 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             self.logger.warning(u"Unable to speak {0} value.".format(item_to_speak))
 
+        except KeyError:
+            self.logger.warning(u"No announcements to speak for this device.".format(item_to_speak))
+
     # =============================================================================
     def announcement_update_states(self, force=False):
         """
@@ -652,8 +655,6 @@ class Plugin(indigo.PluginBase):
         """
 
         now = indigo.server.getTime()
-
-        self.logger.debug(u"Updating device states.")
 
         # Open the announcements file and load the contents
         with open(self.announcements_file) as outfile:
