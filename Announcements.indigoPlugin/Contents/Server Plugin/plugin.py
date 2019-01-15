@@ -50,7 +50,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.03'
+__version__   = '1.0.04'
 
 # =============================================================================
 
@@ -97,10 +97,10 @@ class Plugin(indigo.PluginBase):
             shutil.rmtree(working_directory, ignore_errors=True)
 
         # If a new install, lets establish a new empty dict.
-        else:
-            with open(self.announcements_file, 'w+') as outfile:
-                outfile.write(u"{}")
-            self.sleep(1)  # Wait a moment to let the system catch up.
+        elif not os.path.isfile(self.announcements_file):
+                with open(self.announcements_file, 'w+') as outfile:
+                    outfile.write(u"{}")
+                self.sleep(1)  # Wait a moment to let the system catch up.
 
         # try:
         #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
