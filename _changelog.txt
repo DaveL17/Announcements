@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.05
+- Changes Python lists to tuples where possible to improve performance.
+
 v1.0.04
 - Fixes critical bug where restarting the plugin deletes saved
   announcements.

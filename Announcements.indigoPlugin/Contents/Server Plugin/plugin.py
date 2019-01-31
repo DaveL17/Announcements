@@ -50,7 +50,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.04'
+__version__   = '1.0.05'
 
 # =============================================================================
 
@@ -97,10 +97,10 @@ class Plugin(indigo.PluginBase):
             shutil.rmtree(working_directory, ignore_errors=True)
 
         # If a new install, lets establish a new empty dict.
-        elif not os.path.isfile(self.announcements_file):
-                with open(self.announcements_file, 'w+') as outfile:
-                    outfile.write(u"{}")
-                self.sleep(1)  # Wait a moment to let the system catch up.
+        if not os.path.isfile(self.announcements_file):
+            with open(self.announcements_file, 'w+') as outfile:
+                outfile.write(u"{}")
+            self.sleep(1)  # Wait a moment to let the system catch up.
 
         # try:
         #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
@@ -150,7 +150,7 @@ class Plugin(indigo.PluginBase):
 
         # Ensure that the dialog opens with fresh fields.
         if typeId == 'announcementsDevice':
-            for key in ['announcementName', 'announcementList', 'announcementRefresh', 'announcementText', 'subGeneratorResult']:
+            for key in ('announcementName', 'announcementList', 'announcementRefresh', 'announcementText', 'subGeneratorResult'):
                 valuesDict[key] = ''
 
         return valuesDict
@@ -249,7 +249,7 @@ class Plugin(indigo.PluginBase):
             night     = int(valuesDict['nightStart'])
 
             if not (morning < afternoon < evening < night):
-                for _ in ['morningStart', 'afternoonStart', 'eveningStart', 'nightStart']:
+                for _ in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
                     error_msg_dict[_] = u"Each start time must be greater than the prior one."
                 error_msg_dict['showAlertText'] = u"Message Start Time Error\n\nEach start time must be greater than the preceding one (morning < afternoon < evening < night)."
                 return False, valuesDict, error_msg_dict
@@ -274,7 +274,7 @@ class Plugin(indigo.PluginBase):
         :return indigo.dict valuesDict:
         """
 
-        for key in ['announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText']:
+        for key in ('announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText'):
             valuesDict[key] = ''
 
         valuesDict['editFlag'] = False
@@ -332,7 +332,7 @@ class Plugin(indigo.PluginBase):
         with open(self.announcements_file, 'w') as outfile:
             outfile.write(u"{0}".format(infile))
 
-        for key in ['announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText']:
+        for key in ('announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText'):
             valuesDict[key] = ''
 
         valuesDict['editFlag'] = False
@@ -469,7 +469,7 @@ class Plugin(indigo.PluginBase):
         valuesDict['announcementName'] = valuesDict['announcementName'].strip()  # Strip leading and trailing whitespace if there is any.
 
         # Announcement Name empty or 'REQUIRED'
-        if valuesDict['announcementName'].isspace() or valuesDict['announcementName'] in ['', 'REQUIRED', ]:
+        if valuesDict['announcementName'].isspace() or valuesDict['announcementName'] in ('', 'REQUIRED',):
             self.logger.error(u"A announcement name is required.")
             valuesDict['announcementName'] = 'REQUIRED'
             return valuesDict
@@ -495,7 +495,7 @@ class Plugin(indigo.PluginBase):
             return valuesDict
 
         # Announcement Text is empty or 'REQUIRED'
-        if valuesDict['announcementText'].isspace() or valuesDict['announcementText'] in ['', 'REQUIRED', ]:
+        if valuesDict['announcementText'].isspace() or valuesDict['announcementText'] in ('', 'REQUIRED',):
             self.logger.error(u"An announcement is required.")
             valuesDict['announcementText'] = 'REQUIRED'
             return valuesDict
@@ -555,7 +555,7 @@ class Plugin(indigo.PluginBase):
             outfile.write(u"{0}".format(infile))
 
         # Clear the fields.
-        for key in ['announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText']:
+        for key in ('announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText'):
             valuesDict[key] = ''
 
         valuesDict['editFlag'] = False
