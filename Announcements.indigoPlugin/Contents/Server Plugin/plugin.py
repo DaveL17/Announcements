@@ -29,7 +29,6 @@ import string
 import sys
 
 # Third-party modules
-from DLFramework import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError, error:
@@ -50,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.05'
+__version__   = '1.0.07'
 
 # =============================================================================
 
@@ -130,6 +129,10 @@ class Plugin(indigo.PluginBase):
 
         # Update the devices to reflect any changes
         self.announcement_update_states()
+
+        # Ensure that self.pluginPrefs includes any recent changes.
+        for k in valuesDict:
+            self.pluginPrefs[k] = valuesDict[k]
 
     # =============================================================================
     def deviceStartComm(self, dev):

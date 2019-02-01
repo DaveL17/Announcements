@@ -1,5 +1,12 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.07
+- Syncronize self.pluginPrefs in closedPrefsConfigUi().
+
+v1.0.06
+- Changes "En/Disable all Fantastic Weather Devices" to "En/Disable all Plugin
+  Devices".
+
 v1.0.05
 - Changes Python lists to tuples where possible to improve performance.
 
