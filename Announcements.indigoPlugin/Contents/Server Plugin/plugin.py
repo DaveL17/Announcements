@@ -14,6 +14,8 @@ speech tools.
 # =================================== TO DO ===================================
 
 # TODO: how will the plugin handle localization like comma separators?
+# TODO: on dev, the substitution generator is only showing announcements
+#       devices.
 
 # ================================== IMPORTS ==================================
 
@@ -49,7 +51,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.07'
+__version__   = '1.0.08'
 
 # =============================================================================
 
@@ -986,7 +988,7 @@ class Plugin(indigo.PluginBase):
         :return list result:
         """
 
-        return [(dev.id, dev.name) for dev in indigo.devices.iter("com.fogbert.indigoplugin.announcements")]
+        return [(dev.id, dev.name) for dev in indigo.devices.iter()]
 
     # =============================================================================
     def generatorList(self, filter="", valuesDict=None, typeId="", targetId=0):
