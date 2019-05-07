@@ -1,5 +1,5 @@
 # ![Logo](https://github.com/DaveL17/Announcements/wiki/img/img_announcementsLogo.png)  
-# ![shield](https://img.shields.io/github/release/DaveL17/Announcements.svg)
+# ![shield](https://img.shields.io/github/release/DaveL17/Announcements.svg) ![indigo-version](https://img.shields.io/badge/Indigo-7.0-blueviolet.svg) ![indigo-version](https://img.shields.io/badge/Python-2.7-darkgreen.svg)
 
 Create complex announcement strings for use with your favorite Indigo audio service. 
 
