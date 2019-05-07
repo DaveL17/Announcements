@@ -1,11 +1,15 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.09
+- Ensures that the plugin is compatible with the Indigo server version.
+- Standardizes SupportURL behavior across all plugin functions.
+
 v1.0.08
 - Fixes bug in substitution generator where generator was returning only plugin
   devices.
 
 v1.0.07
-- Syncronize self.pluginPrefs in closedPrefsConfigUi().
+- Synchronize self.pluginPrefs in closedPrefsConfigUi().
 
 v1.0.06
 - Changes "En/Disable all Announcements Devices" to "En/Disable all Plugin

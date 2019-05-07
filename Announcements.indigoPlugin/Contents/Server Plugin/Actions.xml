@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Actions>
 
-    <SupportURL>http://github.com/DaveL17/Announcements/wiki</SupportURL>
 
     <Action id="refreshAnnouncementData" uiPath="DeviceActions">
         <Name>Refresh Announcement</Name>
         <CallbackMethod>announcementRefreshAction</CallbackMethod>
         <ConfigUI>
+            <SupportURL>https://github.com/DaveL17/Announcements/wiki/actions</SupportURL>
 
 			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
 				<Label>Use this Action Item to select an individual announcement to be refreshed. You must first select a device to refresh and then the select from the list of announcements for that device.</Label>
@@ -34,6 +34,7 @@
         <Name>Speak Announcement</Name>
         <CallbackMethod>announcementSpeakAction</CallbackMethod>
         <ConfigUI>
+            <SupportURL>https://github.com/DaveL17/Announcements/wiki/actions</SupportURL>
 
 			<Field id="instructionsLabel" type="label" fontColor="black" fontSize="regular">
 				<Label>Use this Action Item to select an individual announcement to be spoken. You must first select an announcement device and then select from the list of announcements for that device.</Label>

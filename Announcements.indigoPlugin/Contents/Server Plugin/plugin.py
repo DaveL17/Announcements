@@ -51,7 +51,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.08'
+__version__   = '1.0.09'
 
 # =============================================================================
 
@@ -207,7 +207,16 @@ class Plugin(indigo.PluginBase):
             pass
 
     # =============================================================================
+    def sendDevicePing(self, dev_id=0, suppress_logging=False):
+
+        indigo.server.log(u"Announcements Plugin devices do not support the ping function.")
+        return {'result': 'Failure'}
+
+    # =============================================================================
     def startup(self):
+
+        # =========================== Audit Indigo Version ============================
+        self.Fogbert.audit_server_version(min_ver=7)
 
         # ============= Delete Out of Date Announcements ===============
 

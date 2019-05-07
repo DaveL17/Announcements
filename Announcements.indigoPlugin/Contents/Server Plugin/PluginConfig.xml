@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <PluginConfig>
-
+	<SupportURL>https://github.com/DaveL17/Announcements/wiki/configuration</SupportURL>
 	<Field id="infoLabel0" type="label">
 		<Label>Announcements Plugin</Label>
 	</Field>

@@ -4,6 +4,7 @@
 	<Device type="custom" id="announcementsDevice">
 		<Name>Announcements Device</Name>
 		<ConfigUI>
+            <SupportURL>https://github.com/DaveL17/Announcements/wiki/devices</SupportURL>
 
             <Field id="label1" type="label">
                 <Label>Modifiers:</Label>
@@ -169,7 +170,7 @@
 	<Device type="custom" id="salutationsDevice">
 		<Name>Salutations Device</Name>
 		<ConfigUI>
-
+            <SupportURL>https://github.com/DaveL17/Announcements/wiki/devices</SupportURL>
             <Field id="label1" type="label">
                 <Label>Use this device to create standard greetings that can be added to the beginning and/or end of any announcement. The text of the greeting to be used is controlled by time of day settings.</Label>
             </Field>
