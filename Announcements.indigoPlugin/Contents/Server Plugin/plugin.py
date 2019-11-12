@@ -51,7 +51,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.09'
+__version__   = '1.0.10'
 
 # =============================================================================
 
