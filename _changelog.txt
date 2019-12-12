@@ -1,5 +1,9 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.11
+- Improvements to device configuration validation.
+- Code refinements.
+
 v1.0.10
 - Removes all references to legacy version checking.
 
