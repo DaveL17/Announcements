@@ -243,45 +243,36 @@ class Plugin(indigo.PluginBase):
             outfile.write(u"{0}".format(infile))
 
     # =============================================================================
-    def validatePrefsConfigUi(self, values_dict):
-
-        return True, values_dict
+    # def validatePrefsConfigUi(self, values_dict):
+    #
+    #     return True, values_dict
 
     # =============================================================================
     def validateDeviceConfigUi(self, values_dict, type_id, dev_id):
 
-        class DeviceValidationError(Exception):
-            def __init__(self, key=(), alert_text=None, message=u'Error!'):
-                self.key = key
-                self.alert_text = alert_text
-                self.message = message
-
         error_msg_dict = indigo.Dict()
 
-        try:
-            # Announcements device
-            if type_id == 'announcementsDevice':
-                return True, values_dict
-
-            # Salutations device
-            if type_id == 'salutationsDevice':
-                morning   = int(values_dict['morningStart'])
-                afternoon = int(values_dict['afternoonStart'])
-                evening   = int(values_dict['eveningStart'])
-                night     = int(values_dict['nightStart'])
-
-                if not (morning < afternoon < evening < night):
-                    raise DeviceValidationError(key=('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'), alert_text=u"Message Start Time Error\n\nEach start time must be greater than the preceding one (morning < afternoon < evening < night).", message=u"Each start time must be greater than the prior one.")
-
-            self.announcement_update_states()
+        # try:
+        # Announcements device
+        if type_id == 'announcementsDevice':
             return True, values_dict
 
-        except DeviceValidationError as err:
-            for key in err.key:
-                error_msg_dict[key] = err.message
-            if err.alert_text:
-                error_msg_dict['showAlertText'] = err.alert_text
+        # Salutations device
+        if type_id == 'salutationsDevice':
+            morning   = int(values_dict['morningStart'])
+            afternoon = int(values_dict['afternoonStart'])
+            evening   = int(values_dict['eveningStart'])
+            night     = int(values_dict['nightStart'])
+
+            if not (morning < afternoon < evening < night):
+                for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
+                    error_msg_dict[key] = u"Each start time must be greater than the prior one."
+
+        if len(error_msg_dict) > 0:
             return False, values_dict, error_msg_dict
+
+        self.announcement_update_states()
+        return True, values_dict
 
     # =============================================================================
     # ============================== Plugin Methods ===============================
