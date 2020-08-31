@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.12
+- Removes blue text for all displays (views poorly in dark mode).
+
 v1.0.11
 - Improvements to device configuration validation.
 - Code refinements.

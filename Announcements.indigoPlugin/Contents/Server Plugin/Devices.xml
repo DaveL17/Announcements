@@ -10,7 +10,7 @@
                 <Label>Modifiers:</Label>
             </Field>
 
-            <Field id="label2" type="label" fontColor="blue" fontSize="small">
+            <Field id="label2" type="label" fontColor="gray" fontSize="small">
                 <Label>     Current Time: ct:%H:%M, ct:%A, ...
      Date/Time: dt:%H:%M, dt:%A, ...
      Numerics: n:0, n:1, ...</Label>
@@ -20,7 +20,7 @@
                 <Label>Syntax:</Label>
             </Field>
 
-            <Field id="label4" type="label" fontColor="blue" fontSize="small">
+            <Field id="label4" type="label" fontColor="gray" fontSize="small">
                 <Label>     Current Time: &lt;&lt;now, ct:%A&gt;&gt;
      Device: &lt;&lt;%%d:12345678:state_name%%, dt:%H:%M&gt;&gt;
      Variable: &lt;&lt;%%v:12345678%%, n:2&gt;&gt;</Label>
@@ -30,7 +30,7 @@
                 <Label>Example:</Label>
             </Field>
 
-            <Field id="label6" type="label" fontColor="blue" fontSize="small">
+            <Field id="label6" type="label" fontColor="gray" fontSize="small">
                 <Label>%%d:24058256:intro%%. It's &lt;&lt;%%v:1289138982%%, dt:%A&gt;&gt; at &lt;&lt;now, ct:%-I:%M%p&gt;&gt;. The current temperature is &lt;&lt;%%d:1149686816:temp%%, n:0&gt;&gt; degrees.</Label>
             </Field>
 
@@ -38,7 +38,7 @@
                 <Label>Result:</Label>
             </Field>
 
-            <Field id="label8" type="label" fontColor="blue" fontSize="small">
+            <Field id="label8" type="label" fontColor="gray" fontSize="small">
                 <Label>"Good afternoon. It's Tuesday at 3:24 pm. The current temperature is 42 degrees."</Label>
             </Field>
 
