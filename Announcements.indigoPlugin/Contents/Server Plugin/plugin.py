@@ -28,7 +28,7 @@ import os
 import re
 import shutil
 import string
-import sys
+import traceback
 
 # Third-party modules
 try:
@@ -78,7 +78,6 @@ class Plugin(indigo.PluginBase):
         self.logger.debug(u"Plugin refresh interval: {0}".format(self.update_frequency))
 
         # ====================== Initialize DLFramework =======================
-
         self.Fogbert = Dave.Fogbert(self)
 
         # Log pluginEnvironment information when plugin is first started
@@ -89,7 +88,8 @@ class Plugin(indigo.PluginBase):
         # Establish the default announcements file.
         working_directory       = u"{0}/Announcements Plugin/".format(os.path.expanduser('~'))
         old_file                = u"{0}announcements.txt".format(working_directory)
-        self.announcements_file = u"{0}/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt".format(indigo.server.getInstallFolderPath())
+        self.announcements_file = u"{0}/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt".format(
+            indigo.server.getInstallFolderPath())
 
         # If it exists under the old location, let's move it over.
         if os.path.isfile(old_file):
@@ -100,7 +100,7 @@ class Plugin(indigo.PluginBase):
         # If a new install, lets establish a new empty dict.
         if not os.path.isfile(self.announcements_file):
             with open(self.announcements_file, 'w+') as outfile:
-                outfile.write(u"{}")
+                outfile.write("{}")
             self.sleep(1)  # Wait a moment to let the system catch up.
 
         # try:
@@ -124,7 +124,12 @@ class Plugin(indigo.PluginBase):
     def closedPrefsConfigUi(self, values_dict, user_cancelled):
 
         if not user_cancelled:
-            debug_label = {10: u"Debugging Messages", 20: u"Informational Messages", 30: u"Warning Messages", 40: u"Error Messages", 50: u"Critical Errors Only"}
+            debug_label = {10: u"Debugging Messages",
+                           20: u"Informational Messages",
+                           30: u"Warning Messages",
+                           40: u"Error Messages",
+                           50: u"Critical Errors Only"
+                           }
             self.debugLevel       = int(values_dict['showDebugLevel'])
             self.update_frequency = int(values_dict['pluginRefresh'])
             self.indigo_log_handler.setLevel(self.debugLevel)
@@ -156,7 +161,12 @@ class Plugin(indigo.PluginBase):
 
         # Ensure that the dialog opens with fresh fields.
         if type_id == 'announcementsDevice':
-            for key in ('announcementName', 'announcementList', 'announcementRefresh', 'announcementText', 'subGeneratorResult'):
+            for key in ('announcementName',
+                        'announcementList',
+                        'announcementRefresh',
+                        'announcementText',
+                        'subGeneratorResult'
+                        ):
                 values_dict[key] = ''
 
         return values_dict
@@ -185,7 +195,8 @@ class Plugin(indigo.PluginBase):
         except KeyError:
             announcement_list = []
 
-        # Iterate through the list of tuples and save each announcement name as a device key. Keys (state id's) can't contain Unicode.
+        # Iterate through the list of tuples and save each announcement name as a device key. Keys (state id's) can't
+        # contain Unicode.
         for thing in announcement_list:
             thing_name         = thing[1].replace(' ', '_')
             announcement_state = self.getDeviceStateDictForStringType(thing_name, thing_name, thing_name)
@@ -240,7 +251,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write(u"{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
     # =============================================================================
     # def validatePrefsConfigUi(self, values_dict):
@@ -291,7 +302,12 @@ class Plugin(indigo.PluginBase):
         :return indigo.dict values_dict:
         """
 
-        for key in ('announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText'):
+        for key in ('announcementIndex',
+                    'announcementName',
+                    'announcementRefresh',
+                    'announcementList',
+                    'announcementText'
+                    ):
             values_dict[key] = ''
 
         values_dict['editFlag'] = False
@@ -347,9 +363,14 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write(u"{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
-        for key in ('announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText'):
+        for key in ('announcementIndex',
+                    'announcementName',
+                    'announcementRefresh',
+                    'announcementList',
+                    'announcementText'
+                    ):
             values_dict[key] = ''
 
         values_dict['editFlag'] = False
@@ -395,7 +416,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write(u"{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
         return values_dict
 
@@ -481,46 +502,49 @@ class Plugin(indigo.PluginBase):
         :return indigo.dict values_dict:
         """
 
+        error_msg_dict = indigo.Dict()
+
         # ===================== Validation Methods =====================
 
-        values_dict['announcementName'] = values_dict['announcementName'].strip()  # Strip leading and trailing whitespace if there is any.
+        # Strip leading and trailing whitespace if there is any.
+        values_dict['announcementName'] = values_dict['announcementName'].strip()
 
         # Announcement Name empty or 'REQUIRED'
         if values_dict['announcementName'].isspace() or values_dict['announcementName'] in ('', 'REQUIRED',):
-            self.logger.error(u"A announcement name is required.")
-            values_dict['announcementName'] = 'REQUIRED'
-            return values_dict
+            values_dict['announcementName']    = 'REQUIRED'
+            error_msg_dict['announcementName'] = u"A announcement name is required."
+            return values_dict, error_msg_dict
 
         # Announcement Name starts with digit'
         if values_dict['announcementName'][0].isdigit():
-            self.logger.error(u"A announcement name can not start with a number.")
-            return values_dict
+            error_msg_dict['announcementName'] = u"An announcement name can not start with a number."
+            return values_dict, error_msg_dict
 
         # Announcement Name starts with punctuation
         exclude = set(string.punctuation)
         if values_dict['announcementName'][0] in exclude:
-            self.logger.error(u"A announcement name can not start with punctuation.")
-            return values_dict
+            error_msg_dict['announcementName'] = u"A announcement name can not start with punctuation."
+            return values_dict, error_msg_dict
 
         # Announcement Name starts with XML.
         if values_dict['announcementName'][0:3].lower() == 'xml':
-            self.logger.error(u"A announcement name can not start with the letters 'xml'.")
-            return values_dict
+            error_msg_dict['announcementName'] = u"A announcement name can not start with the letters 'xml'."
+            return values_dict, error_msg_dict
 
         if not all(ord(char) < 128 for char in values_dict['announcementName']):
-            self.logger.error(u"A announcement name can not contain Unicode characters.")
-            return values_dict
+            error_msg_dict['announcementName'] = u"A announcement name can not contain Unicode characters."
+            return values_dict, error_msg_dict
 
         # Announcement Text is empty or 'REQUIRED'
         if values_dict['announcementText'].isspace() or values_dict['announcementText'] in ('', 'REQUIRED',):
-            self.logger.error(u"An announcement is required.")
             values_dict['announcementText'] = 'REQUIRED'
-            return values_dict
+            error_msg_dict['announcementText'] = u"An announcement is required."
+            return values_dict, error_msg_dict
 
         # Announcement Text not digit or less than 1
         if not values_dict['announcementRefresh'].isdigit() or int(values_dict['announcementRefresh']) < 1:
-            self.logger.error(u"A positive integer greater than zero is required.")
-            return values_dict
+            error_msg_dict['announcementRefresh'] = u"A positive integer greater than zero is required."
+            return values_dict, error_msg_dict
 
         # Open the announcements file and load the contents
         with open(self.announcements_file) as outfile:
@@ -569,10 +593,15 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write(u"{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
         # Clear the fields.
-        for key in ('announcementIndex', 'announcementName', 'announcementRefresh', 'announcementList', 'announcementText'):
+        for key in ('announcementIndex',
+                    'announcementName',
+                    'announcementRefresh',
+                    'announcementList',
+                    'announcementText'
+                    ):
             values_dict[key] = ''
 
         values_dict['editFlag'] = False
@@ -650,9 +679,11 @@ class Plugin(indigo.PluginBase):
                 announcement = indigo.variables[item_source].value
                 indigo.server.speak(announcement, waitUntilDone=False)
         except ValueError:
+            self.Fogbert.pluginErrorHandler(traceback.format_exc())
             self.logger.warning(u"Unable to speak {0} value.".format(item_to_speak))
 
         except KeyError:
+            self.Fogbert.pluginErrorHandler(traceback.format_exc())
             self.logger.warning(u"No announcements to speak for this device.".format(item_to_speak))
 
     # =============================================================================
@@ -733,8 +764,8 @@ class Plugin(indigo.PluginBase):
                     # Cycle through the announcements and update as needed
                     try:
 
-                        # Look at each plugin device and construct a placeholder if not already present. This is a placeholder
-                        # and doesn't actually write the key back to the file.
+                        # Look at each plugin device and construct a placeholder if not already present. This is a
+                        # placeholder and doesn't actually write the key back to the file.
                         if dev.id not in infile.keys():
                             infile[dev.id] = {}
 
@@ -746,7 +777,8 @@ class Plugin(indigo.PluginBase):
                                 update_time = parser.parse(refresh_time)
 
                             except ValueError as sub_error:
-                                self.logger.warning(u"Error coercing announcement update time. Error: {0}".format(sub_error))
+                                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                                self.logger.warning(u"Error coercing announcement update time.")
                                 update_time = now - dt.timedelta(minutes=1)
 
                             # If it's time for an announcement to be refreshed.
@@ -771,12 +803,11 @@ class Plugin(indigo.PluginBase):
                         dev.updateStatesOnServer(states_list)
 
                     except KeyError as sub_error:
-                        self.logger.error(u"error: {0}".format(sub_error))
-                        pass
+                        self.Fogbert.pluginErrorHandler(traceback.format_exc())
 
         # Open the announcements file and save the updated dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write(u"{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
     # =============================================================================
     def announcement_update_states_now(self):
@@ -798,8 +829,9 @@ class Plugin(indigo.PluginBase):
             try:
                 indigo.device.enable(dev, value=False)
 
-            except Exception as sub_error:
-                self.logger.critical(u"Exception when trying to kill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
+            except ValueError:
+                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                self.logger.critical(u"Exception when trying to kill all comms.")
 
     # =============================================================================
     def commsUnkillAll(self):
@@ -817,8 +849,9 @@ class Plugin(indigo.PluginBase):
             try:
                 indigo.device.enable(dev, value=True)
 
-            except Exception as sub_error:
-                self.logger.critical(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, sub_error))
+            except ValueError:
+                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                self.logger.critical(u"Exception when trying to unkill all comms.")
 
     # =============================================================================
     def format_digits(self, match):
@@ -831,7 +864,7 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param str match:
+        :param regex match:
         :return re.match result:
         """
 
@@ -882,7 +915,7 @@ class Plugin(indigo.PluginBase):
             return "{0:{1}}".format(match1, match2)
 
         except ValueError:
-            return "{0} {1}".format(match1, match2)
+            return "Unallowable datetime specifiers: {0} {1}".format(match1, match2)
 
     # =============================================================================
     def format_datetime(self, match1, match2):
@@ -909,7 +942,7 @@ class Plugin(indigo.PluginBase):
             return "{0:{1}}".format(match1, match2)
 
         except ValueError:
-            return "{0} {1}".format(match1, match2)
+            return "Unallowable datetime specifiers: {0} {1}".format(match1, match2)
 
     # =============================================================================
     def format_number(self, match1, match2):
@@ -935,7 +968,7 @@ class Plugin(indigo.PluginBase):
             return u"{0:0.{1}f}".format(float(match1), int(match2))
 
         except ValueError:
-            return "{0} {1}".format(match1, match2)
+            return "Unallowable datetime specifiers: {0} {1}".format(match1, match2)
 
     # =============================================================================
     def generatorAnnouncementList(self, filter="", values_dict=None, type_id="", target_id=0):
@@ -1013,8 +1046,8 @@ class Plugin(indigo.PluginBase):
         {announcement ID:
           {'Announcement': u"announcement string",
            'nextRefresh': 'YYYY-MM-DD HH:MM:SS',
-           'Name': u'announcement name',
-           'Refresh': u'minutes'
+           'Name': u"announcement name",
+           'Refresh': u"minutes"
           }
         }
 
@@ -1166,5 +1199,3 @@ class Plugin(indigo.PluginBase):
         """
 
         return re.sub(r'(<<.*?), *([ct|dt|n:].*?>>)', self.format_digits, announcement)
-    # =============================================================================
-
