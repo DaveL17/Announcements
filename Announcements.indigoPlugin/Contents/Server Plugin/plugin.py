@@ -51,7 +51,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.12'
+__version__   = '1.0.14'
 
 # =============================================================================
 
@@ -69,7 +69,8 @@ class Plugin(indigo.PluginBase):
         self.pluginIsInitializing = True
         self.pluginIsShuttingDown = False
 
-        self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
+        log_format = '%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s'
+        self.plugin_file_handler.setFormatter(logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.indigo_log_handler.setLevel(self.debugLevel)
@@ -1033,7 +1034,7 @@ class Plugin(indigo.PluginBase):
         :return list result:
         """
 
-        return [(dev.id, dev.name) for dev in indigo.devices.iter()]
+        return self.Fogbert.deviceAndVariableList()
 
     # =============================================================================
     def generatorList(self, filter="", values_dict=None, type_id="", target_id=0):
@@ -1096,19 +1097,8 @@ class Plugin(indigo.PluginBase):
         :return list result:
         """
 
-        try:
-            id_number = int(values_dict['devVarMenu'])
-
-            if id_number in indigo.devices.keys():
-                state_list = [(state, state) for state in indigo.devices[id_number].states if not state.endswith('.ui')]
-                state_list.remove(('onOffState', 'onOffState'))
-                return state_list
-
-            elif id_number in indigo.variables.keys():
-                return [('value', 'Value')]
-
-        except (KeyError, ValueError):
-            return [(0, 'Pick a Device or Variable')]
+        id_number = values_dict['devVarMenu']
+        return self.Fogbert.generatorStateOrValue(id_number)
 
     # =============================================================================
     def generator_substitutions(self, values_dict, type_id="", target_id=0):

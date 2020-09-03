@@ -35,7 +35,8 @@ class Fogbert(object):
         self.plugin.debugLog(u"Initializing DLFramework...")
         self.pluginPrefs = plugin.pluginPrefs
 
-        self.plugin.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
+        log_format = '%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s'
+        self.plugin.plugin_file_handler.setFormatter(logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S'))
 
     def pluginEnvironment(self):
         """

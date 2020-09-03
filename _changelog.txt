@@ -1,5 +1,10 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.14
+- Fixes bug in device substitution generator where control was only listing
+  devices and not variables.
+- Further integration with DLFramework.
+
 v1.0.13
 - Better integration of DLFramework.
 - Improved device settings validation.
