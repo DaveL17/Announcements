@@ -4,7 +4,7 @@
 """
 DLFramework is a framework to consolidate methods used throughout all
 Indigo plugins with the com.fogbert.indigoPlugin.xxxx bundle identifier.
-.1.
+.
 """
 
 import ast
@@ -213,7 +213,8 @@ class Fogbert(object):
         ver = platform.mac_ver()[0].split('.')
 
         if int(ver[1]) < min_ver:
-            self.plugin.stopPlugin(u"This plugin requires Mac OS version 10.{0} or above.".format(min_ver), isError=True)
+            self.plugin.stopPlugin(u"This plugin requires Mac OS version 10.{0} or above.".format(min_ver),
+                                   isError=True)
 
 
 class Formatter(object):

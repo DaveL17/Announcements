@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.15
+- Code refinements.
+
 v1.0.14
 - Fixes bug in device substitution generator where control was only listing
   devices and not variables.

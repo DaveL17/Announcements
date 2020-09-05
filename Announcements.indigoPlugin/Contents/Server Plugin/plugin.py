@@ -51,7 +51,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.14'
+__version__   = '1.0.15'
 
 # =============================================================================
 
@@ -70,7 +70,7 @@ class Plugin(indigo.PluginBase):
         self.pluginIsShuttingDown = False
 
         log_format = '%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s'
-        self.plugin_file_handler.setFormatter(logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S'))
+        self.plugin_file_handler.setFormatter(logging.Formatter(fmt=log_format, datefmt='%Y-%m-%d %H:%M:%S'))
         self.debug      = True
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.indigo_log_handler.setLevel(self.debugLevel)
@@ -96,12 +96,12 @@ class Plugin(indigo.PluginBase):
         if os.path.isfile(old_file):
             os.rename(old_file, self.announcements_file)
             self.sleep(1)
-            shutil.rmtree(working_directory, ignore_errors=True)
+            shutil.rmtree(path=working_directory, ignore_errors=True)
 
         # If a new install, lets establish a new empty dict.
         if not os.path.isfile(self.announcements_file):
             with open(self.announcements_file, 'w+') as outfile:
-                outfile.write("{}")
+                outfile.write(s="{}")
             self.sleep(1)  # Wait a moment to let the system catch up.
 
         # try:
@@ -117,10 +117,6 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     # ============================== Indigo Methods ===============================
     # =============================================================================
-    def closedDeviceConfigUi(self, values_dict, user_cancelled, type_id, dev_id):
-
-        pass
-
     # =============================================================================
     def closedPrefsConfigUi(self, values_dict, user_cancelled):
 
@@ -188,7 +184,7 @@ class Plugin(indigo.PluginBase):
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
 
         # Sort the dict and create a list of tuples.
         try:
@@ -234,7 +230,7 @@ class Plugin(indigo.PluginBase):
         # ============= Delete Out of Date Announcements ===============
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict.
@@ -252,12 +248,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write("{0}".format(infile))
-
-    # =============================================================================
-    # def validatePrefsConfigUi(self, values_dict):
-    #
-    #     return True, values_dict
+            outfile.write(s="{0}".format(infile))
 
     # =============================================================================
     def validateDeviceConfigUi(self, values_dict, type_id, dev_id):
@@ -354,17 +345,17 @@ class Plugin(indigo.PluginBase):
         """
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and delete the key.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
         index  = int(values_dict['announcementList'])
         del infile[dev_id][index]
 
         # Open the announcements file and save the new dict.
-        with open(self.announcements_file, 'w') as outfile:
-            outfile.write("{0}".format(infile))
+        with open(name=self.announcements_file, mode='w') as outfile:
+            outfile.write(s="{0}".format(infile))
 
         for key in ('announcementIndex',
                     'announcementName',
@@ -397,11 +388,11 @@ class Plugin(indigo.PluginBase):
         self.logger.info(u"Announcement to be duplicated: {0}".format(index))
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and delete the key.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
 
         # Create a new announcement.
         temp_dict = infile[dev_id]
@@ -416,8 +407,8 @@ class Plugin(indigo.PluginBase):
         infile[dev_id] = temp_dict
 
         # Open the announcements file and save the new dict.
-        with open(self.announcements_file, 'w') as outfile:
-            outfile.write("{0}".format(infile))
+        with open(name=self.announcements_file, mode='w') as outfile:
+            outfile.write(s="{0}".format(infile))
 
         return values_dict
 
@@ -439,11 +430,11 @@ class Plugin(indigo.PluginBase):
         self.logger.debug(u"Editing the {0} announcement".format(values_dict['announcementName']))
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the data for this device.
-        infile    = ast.literal_eval(infile)
+        infile    = ast.literal_eval(node_or_string=infile)
         temp_dict = infile[dev_id]
 
         # Get the selected announcement index and populate the UI elements.
@@ -474,18 +465,18 @@ class Plugin(indigo.PluginBase):
         dev               = indigo.devices[device_id]
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
 
         # Iterate through the keys to find the right announcement to update.
         announcement_dict = infile[int(device_id)]
         for key in announcement_dict.keys():
             if announcement_dict[key]['Name'] == announcement_name.replace('_', ' '):
                 announcement = self.substitute(infile[device_id][key]['Announcement'])
-                result = self.substitution_regex(announcement)
+                result = self.substitution_regex(announcement=announcement)
                 dev.updateStateOnServer(announcement_name, value=result)
 
     # =============================================================================
@@ -548,11 +539,11 @@ class Plugin(indigo.PluginBase):
             return values_dict, error_msg_dict
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
 
         try:
             temp_dict = infile[dev_id]
@@ -565,7 +556,7 @@ class Plugin(indigo.PluginBase):
 
         # If new announcement, create unique id, then save to dict.
         if not values_dict['editFlag'] and values_dict['announcementName'] not in announcement_name_list:
-            index = self.announcement_create_id(temp_dict)
+            index = self.announcement_create_id(temp_dict=temp_dict)
             temp_dict[index]                 = {}
             temp_dict[index]['Name']         = values_dict['announcementName']
             temp_dict[index]['Announcement'] = values_dict['announcementText']
@@ -581,7 +572,7 @@ class Plugin(indigo.PluginBase):
 
         # User has created a new announcement with a name already in use
         else:
-            index = self.announcement_create_id(temp_dict)
+            index = self.announcement_create_id(temp_dict=temp_dict)
             temp_dict[index]                 = {}
             temp_dict[index]['Name']         = values_dict['announcementName'] + u'*'
             temp_dict[index]['Announcement'] = values_dict['announcementText']
@@ -593,8 +584,8 @@ class Plugin(indigo.PluginBase):
         infile[dev_id] = temp_dict
 
         # Open the announcements file and save the new dict.
-        with open(self.announcements_file, 'w') as outfile:
-            outfile.write("{0}".format(infile))
+        with open(name=self.announcements_file, mode='w') as outfile:
+            outfile.write(s="{0}".format(infile))
 
         # Clear the fields.
         for key in ('announcementIndex',
@@ -630,7 +621,7 @@ class Plugin(indigo.PluginBase):
 
         # The user has entered a value in the announcement field. Speak that.
         if len(values_dict['announcementText']) > 0:
-            result = self.substitution_regex(self.substitute(values_dict['announcementText']))
+            result = self.substitution_regex(announcement=self.substitute(values_dict['announcementText']))
             indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
@@ -638,14 +629,14 @@ class Plugin(indigo.PluginBase):
         # If the announcement field is blank, and the user has selected an announcement in the list.
         elif values_dict['announcementList'] != "":
             # Open the announcements file and load the contents
-            with open(self.announcements_file) as outfile:
+            with open(name=self.announcements_file) as outfile:
                 infile = outfile.read()
 
             # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
-            infile = ast.literal_eval(infile)
+            infile = ast.literal_eval(node_or_string=infile)
 
             announcement = self.substitute(infile[dev_id][int(values_dict['announcementList'])]['Announcement'])
-            result       = self.substitution_regex(announcement)
+            result       = self.substitution_regex(announcement=announcement)
             indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info(u"{0}".format(result))
@@ -680,11 +671,11 @@ class Plugin(indigo.PluginBase):
                 announcement = indigo.variables[item_source].value
                 indigo.server.speak(announcement, waitUntilDone=False)
         except ValueError:
-            self.Fogbert.pluginErrorHandler(traceback.format_exc())
+            self.Fogbert.pluginErrorHandler(sub_error=traceback.format_exc())
             self.logger.warning(u"Unable to speak {0} value.".format(item_to_speak))
 
         except KeyError:
-            self.Fogbert.pluginErrorHandler(traceback.format_exc())
+            self.Fogbert.pluginErrorHandler(sub_error=traceback.format_exc())
             self.logger.warning(u"No announcements to speak for this device.".format(item_to_speak))
 
     # =============================================================================
@@ -706,11 +697,11 @@ class Plugin(indigo.PluginBase):
         now = indigo.server.getTime()
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as outfile:
+        with open(name=self.announcements_file) as outfile:
             infile = outfile.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
 
         for dev in indigo.devices.iter('self'):
 
@@ -778,7 +769,7 @@ class Plugin(indigo.PluginBase):
                                 update_time = parser.parse(refresh_time)
 
                             except ValueError as sub_error:
-                                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                                self.Fogbert.pluginErrorHandler(sub_error=traceback.format_exc())
                                 self.logger.warning(u"Error coercing announcement update time.")
                                 update_time = now - dt.timedelta(minutes=1)
 
@@ -804,7 +795,7 @@ class Plugin(indigo.PluginBase):
                         dev.updateStatesOnServer(states_list)
 
                     except KeyError as sub_error:
-                        self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                        self.Fogbert.pluginErrorHandler(sub_error=traceback.format_exc())
 
         # Open the announcements file and save the updated dict.
         with open(self.announcements_file, 'w') as outfile:
@@ -831,7 +822,7 @@ class Plugin(indigo.PluginBase):
                 indigo.device.enable(dev, value=False)
 
             except ValueError:
-                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                self.Fogbert.pluginErrorHandler(sub_error=traceback.format_exc())
                 self.logger.critical(u"Exception when trying to kill all comms.")
 
     # =============================================================================
@@ -851,7 +842,7 @@ class Plugin(indigo.PluginBase):
                 indigo.device.enable(dev, value=True)
 
             except ValueError:
-                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                self.Fogbert.pluginErrorHandler(sub_error=traceback.format_exc())
                 self.logger.critical(u"Exception when trying to unkill all comms.")
 
     # =============================================================================
@@ -1065,11 +1056,11 @@ class Plugin(indigo.PluginBase):
         """
 
         # Open the announcements file and load the contents
-        with open(self.announcements_file) as input_file:
+        with open(name=self.announcements_file) as input_file:
             infile = input_file.read()
 
         # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
-        infile = ast.literal_eval(infile)
+        infile = ast.literal_eval(node_or_string=infile)
 
         # Sort the dict and create a list of tuples for the device config list control.
         try:
@@ -1098,7 +1089,7 @@ class Plugin(indigo.PluginBase):
         """
 
         id_number = values_dict['devVarMenu']
-        return self.Fogbert.generatorStateOrValue(id_number)
+        return self.Fogbert.generatorStateOrValue(id=id_number)
 
     # =============================================================================
     def generator_substitutions(self, values_dict, type_id="", target_id=0):
@@ -1134,7 +1125,7 @@ class Plugin(indigo.PluginBase):
 
         except ValueError:
             announcement = self.substitute(values_dict['textfield1'])
-            result       = self.substitution_regex(announcement)
+            result       = self.substitution_regex(announcement=announcement)
             self.logger.info(u"Substitution Generator announcement: \"{0}\"".format(result))
             return values_dict
 
