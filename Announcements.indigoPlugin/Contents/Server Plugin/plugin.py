@@ -248,7 +248,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(self.announcements_file, 'w') as outfile:
-            outfile.write(s="{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
     # =============================================================================
     def validateDeviceConfigUi(self, values_dict, type_id, dev_id):
@@ -355,7 +355,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(name=self.announcements_file, mode='w') as outfile:
-            outfile.write(s="{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
         for key in ('announcementIndex',
                     'announcementName',
@@ -408,7 +408,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(name=self.announcements_file, mode='w') as outfile:
-            outfile.write(s="{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
         return values_dict
 
@@ -585,7 +585,7 @@ class Plugin(indigo.PluginBase):
 
         # Open the announcements file and save the new dict.
         with open(name=self.announcements_file, mode='w') as outfile:
-            outfile.write(s="{0}".format(infile))
+            outfile.write("{0}".format(infile))
 
         # Clear the fields.
         for key in ('announcementIndex',
