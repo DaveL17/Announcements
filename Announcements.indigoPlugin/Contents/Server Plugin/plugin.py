@@ -13,9 +13,7 @@ speech tools.
 
 # =================================== TO DO ===================================
 
-# TODO: how will the plugin handle localization like comma separators?
-# TODO: on dev, the substitution generator is only showing announcements
-#       devices.
+# TODO:
 
 # ================================== IMPORTS ==================================
 
@@ -37,7 +35,7 @@ except ImportError, error:
     indigo.server.log(unicode(error), isError=True)
 
 try:
-    import pydevd
+    import pydevd_pycharm
 except ImportError:
     pass
 
@@ -51,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.15'
+__version__   = '1.0.16'
 
 # =============================================================================
 
@@ -104,10 +102,10 @@ class Plugin(indigo.PluginBase):
                 outfile.write(s="{}")
             self.sleep(1)  # Wait a moment to let the system catch up.
 
-        # try:
-        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-        # except:
-        #     pass
+        try:
+            pydevd_pycharm.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        except:
+            pass
 
         self.pluginIsInitializing = False
 
@@ -1089,7 +1087,7 @@ class Plugin(indigo.PluginBase):
         """
 
         id_number = values_dict['devVarMenu']
-        return self.Fogbert.generatorStateOrValue(id=id_number)
+        return self.Fogbert.generatorStateOrValue(dev_id=id_number)
 
     # =============================================================================
     def generator_substitutions(self, values_dict, type_id="", target_id=0):
