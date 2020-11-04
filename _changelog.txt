@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.17
+- Fixes broken link to logo image in README.md
+
 v1.0.16
 - Fixes bug in generatorStateOrValue.
 - Fixes bug in substitution generator where only plugin devices may display.
