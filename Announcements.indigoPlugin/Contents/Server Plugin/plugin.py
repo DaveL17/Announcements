@@ -49,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.17'
+__version__   = '1.0.18'
 
 # =============================================================================
 
@@ -99,7 +99,7 @@ class Plugin(indigo.PluginBase):
         # If a new install, lets establish a new empty dict.
         if not os.path.isfile(self.announcements_file):
             with open(self.announcements_file, 'w+') as outfile:
-                outfile.write(s="{}")
+                outfile.write("{}")
             self.sleep(1)  # Wait a moment to let the system catch up.
 
         try:

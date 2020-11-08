@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.18
+- Fixes bug in plugin initialization for new installs.
+
 v1.0.17
 - Fixes broken link to logo image in README.md
 
