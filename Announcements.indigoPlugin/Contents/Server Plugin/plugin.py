@@ -49,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.18'
+__version__   = '1.0.19'
 
 # =============================================================================
 
@@ -259,15 +259,20 @@ class Plugin(indigo.PluginBase):
             return True, values_dict
 
         # Salutations device
-        if type_id == 'salutationsDevice':
-            morning   = int(values_dict['morningStart'])
-            afternoon = int(values_dict['afternoonStart'])
-            evening   = int(values_dict['eveningStart'])
-            night     = int(values_dict['nightStart'])
+        try:
+            if type_id == 'salutationsDevice':
+                morning   = int(values_dict['morningStart'])
+                afternoon = int(values_dict['afternoonStart'])
+                evening   = int(values_dict['eveningStart'])
+                night     = int(values_dict['nightStart'])
 
-            if not (morning < afternoon < evening < night):
-                for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
-                    error_msg_dict[key] = u"Each start time must be greater than the prior one."
+                if not (morning < afternoon < evening < night):
+                    for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
+                        error_msg_dict[key] = u"Each start time must be greater than the prior one."
+
+        except ValueError:
+            for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
+                error_msg_dict[key] = u"You must set *all* the time controls to proceed. Otherwise, select cancel."
 
         if len(error_msg_dict) > 0:
             return False, values_dict, error_msg_dict
@@ -1003,7 +1008,7 @@ class Plugin(indigo.PluginBase):
         :return list result:
         """
 
-        return self.Fogbert.deviceList(filter='self')
+        return self.Fogbert.deviceList(dev_filter='self')
 
     # =============================================================================
     def generatorDevVar(self, filter="", values_dict=None, type_id="", target_id=0):
@@ -1085,8 +1090,7 @@ class Plugin(indigo.PluginBase):
         :param int target_id:
         :return list result:
         """
-
-        id_number = values_dict['devVarMenu']
+        id_number = values_dict.get('devVarMenu', 'None')
         return self.Fogbert.generatorStateOrValue(dev_id=id_number)
 
     # =============================================================================
