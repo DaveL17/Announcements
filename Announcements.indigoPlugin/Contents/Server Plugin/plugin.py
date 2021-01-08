@@ -49,7 +49,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.19'
+__version__   = '1.0.20'
 
 # =============================================================================
 
@@ -462,7 +462,6 @@ class Plugin(indigo.PluginBase):
 
         :param indigo.action plugin_action:
         """
-
         announcement_name = plugin_action.props['announcementToRefresh']
         device_id         = int(plugin_action.props['announcementDeviceToRefresh'])
         dev               = indigo.devices[device_id]

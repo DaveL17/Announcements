@@ -1,5 +1,9 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.20
+- Fixes bug in Announcements to Speak Action configuration where
+  dropdown did not filter to show plugin devices only.
+
 v1.0.19
 - Fixes bug in Announcements device configuration upon first creation.
 - Fixes bug in Salutations device where time values not initially validated properly.

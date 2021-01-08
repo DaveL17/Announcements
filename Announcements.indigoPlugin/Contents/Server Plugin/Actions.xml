@@ -42,7 +42,7 @@
 
             <Field id="announcementDeviceToRefresh" type="menu" fontColor="black" fontSize="regular">
                 <Label>Source:</Label>
-                <List class="self" filter="" method="generatorDevVar" dynamicReload="true"/>
+                <List class="self" filter="" method="generatorDeviceList" dynamicReload="true"/>
                 <CallbackMethod>refreshFields</CallbackMethod>
             </Field>
 
