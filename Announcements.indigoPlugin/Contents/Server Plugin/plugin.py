@@ -13,7 +13,7 @@ speech tools.
 
 # =================================== TO DO ===================================
 
-# TODO:
+# TODO: add instructions on how to implement embedded speech synthesizer codes (i.e., [[rate 160]], etc.)
 
 # ================================== IMPORTS ==================================
 
