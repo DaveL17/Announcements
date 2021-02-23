@@ -1,5 +1,9 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v1.0.21
+- Implements Constants.py
+- Code refinements
+
 v1.0.20
 - Fixes bug in Announcements to Speak Action configuration where
   dropdown did not filter to show plugin devices only.

@@ -40,6 +40,7 @@ except ImportError:
     pass
 
 # My modules
+from Constants import *
 import DLFramework.DLFramework as Dave
 
 # =================================== HEADER ==================================
@@ -48,8 +49,8 @@ __author__    = Dave.__author__
 __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
-__title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '1.0.20'
+__title__     = u'Announcements Plugin for Indigo Home Control'
+__version__   = u'1.0.21'
 
 # =============================================================================
 
