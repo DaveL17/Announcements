@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <Actions>
 
-
     <Action id="refreshAnnouncementData" uiPath="DeviceActions">
         <Name>Refresh Announcement</Name>
-        <CallbackMethod>announcementRefreshAction</CallbackMethod>
+        <CallbackMethod>announcement_refresh_action</CallbackMethod>
         <ConfigUI>
             <SupportURL>https://github.com/DaveL17/Announcements/wiki/actions</SupportURL>
 
@@ -14,13 +13,13 @@
 
             <Field id="announcementDeviceToRefresh" type="menu" fontColor="black" fontSize="regular">
                 <Label>Device:</Label>
-                <List class="self" filter="" method="generatorDeviceList" dynamicReload="true"/>
-                <CallbackMethod>refreshFields</CallbackMethod>
+                <List class="self" filter="" method="generator_device_list" dynamicReload="true"/>
+                <CallbackMethod>refresh_fields</CallbackMethod>
             </Field>
 
             <Field id="announcementToRefresh" type="menu" fontColor="black" fontSize="regular">
                 <Label>Announcement:</Label>
-                <List class="self" filter="" method="generatorAnnouncementList" dynamicReload="true"/>
+                <List class="self" filter="" method="generator_announcement_list" dynamicReload="true"/>
             </Field>
 
 			<Field id="exampleLabel" type="label" fontColor="black" fontSize="small" alignWithControl="true">
@@ -30,9 +29,16 @@
         </ConfigUI>
     </Action>
 
-    <Action id="announcementSpeak" uiPath="DeviceActions">
+    <Action id="refreshAllAnnouncements" uiPath="DeviceActions">
+        <Name>Refresh All Announcements</Name>
+        <CallbackMethod>announcement_update_states_now_action</CallbackMethod>
+    </Action>
+
+    <Action id="sep1" uiPath="DeviceActions"/>
+
+    <Action id="announcement_speak" uiPath="DeviceActions">
         <Name>Speak Announcement</Name>
-        <CallbackMethod>announcementSpeakAction</CallbackMethod>
+        <CallbackMethod>announcement_speak_action</CallbackMethod>
         <ConfigUI>
             <SupportURL>https://github.com/DaveL17/Announcements/wiki/actions</SupportURL>
 
@@ -42,13 +48,13 @@
 
             <Field id="announcementDeviceToRefresh" type="menu" fontColor="black" fontSize="regular">
                 <Label>Source:</Label>
-                <List class="self" filter="" method="generatorDeviceList" dynamicReload="true"/>
-                <CallbackMethod>refreshFields</CallbackMethod>
+                <List class="self" filter="" method="generator_device_list" dynamicReload="true"/>
+                <CallbackMethod>refresh_fields</CallbackMethod>
             </Field>
 
             <Field id="announcementToSpeak" type="menu" fontColor="black" fontSize="regular">
                 <Label>Item to Speak:</Label>
-                <List class="self" filter="" method="generatorAnnouncementList" dynamicReload="true"/>
+                <List class="self" filter="" method="generator_announcement_list" dynamicReload="true"/>
             </Field>
 
         </ConfigUI>
