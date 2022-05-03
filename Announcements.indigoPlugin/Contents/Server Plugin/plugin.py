@@ -12,10 +12,6 @@ with more advanced speech tools.
 
 # =================================== TO DO ===================================
 
-# TODO - Add validation that does not allow two announcements to have the same name within a single
-#        device.
-# TODO - Add some error trapping to account for this error:
-#        https://forums.indigodomo.com/viewtopic.php?f=248&t=25950&p=208781#p208780
 # TODO - Convert announcements file to JSON.
 
 # ================================== IMPORTS ==================================
@@ -23,7 +19,7 @@ with more advanced speech tools.
 # Built-in modules
 import ast
 import datetime as dt
-import json
+# import json
 import logging
 import os
 import re
@@ -34,13 +30,9 @@ from dateutil import parser
 # Third-party modules
 try:
     import indigo  # noqa
-except ImportError as error:
-    indigo.server.log(f"{error}", isError=True)
-
-# try:
 #     import pydevd_pycharm
-# except ImportError:
-#     pass
+except ImportError as error:
+    pass
 
 # My modules
 import DLFramework.DLFramework as Dave
@@ -65,9 +57,7 @@ class Plugin(indigo.PluginBase):
     """
     def __init__(self, plugin_id="", plugin_display_name="", plugin_version="", plugin_prefs=None):
         """
-        Title Placeholder
-
-        Body Placeholder
+        Plugin initialization
 
         :param str plugin_id:
         :param str plugin_display_name:
@@ -77,7 +67,8 @@ class Plugin(indigo.PluginBase):
         super().__init__(plugin_id, plugin_display_name, plugin_version, plugin_prefs)
 
         # ============================ Instance Attributes =============================
-        self.debugLevel           = int(self.pluginPrefs.get('showDebugLevel', "30"))
+        self.announcements_file   = ""
+        self.debug_level          = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.pluginIsInitializing = True
         self.pluginIsShuttingDown = False
         self.update_frequency     = int(self.pluginPrefs.get('pluginRefresh', 15))
@@ -87,27 +78,23 @@ class Plugin(indigo.PluginBase):
         self.plugin_file_handler.setFormatter(
             logging.Formatter(fmt=log_format, datefmt='%Y-%m-%d %H:%M:%S')
         )
-        self.indigo_log_handler.setLevel(self.debugLevel)
+        self.indigo_log_handler.setLevel(self.debug_level)
 
         # =========================== Initialize DLFramework ===========================
         self.Fogbert = Dave.Fogbert(self)
         # Log pluginEnvironment information when plugin is first started
         self.Fogbert.pluginEnvironment()
 
-        # ============================= Audit Announcements ============================
-        path_string             = "/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt"
-        self.announcements_file = f"{indigo.server.getInstallFolderPath()}{path_string}"
-        self.initialize_announcements_file()
-
+        # ============================= Remote Debugging ==============================
         # try:
-        #     pydevd_pycharm.settrace(
+        #     pydevd.settrace(
         #         'localhost',
         #         port=5678,
         #         stdoutToServer=True,
         #         stderrToServer=True,
         #         suspend=False
         #     )
-        # except Exception as err:
+        # except:
         #     pass
 
         self.pluginIsInitializing = False
@@ -136,8 +123,12 @@ class Plugin(indigo.PluginBase):
         :param int dev_id:
         :return:
         """
-        self.logger.debug("closedDeviceConfigUi()")
-        self.announcement_update_states(force=True)
+        self.logger.debug('closedDeviceConfigUi() method called:')
+        if not user_cancelled:
+            self.announcement_update_states(force=True)
+            self.logger.debug("closedDeviceConfigUi()")
+        else:
+            self.logger.debug("Device configuration cancelled.")
 
     # =============================================================================
     def closedPrefsConfigUi(self, values_dict=None, user_cancelled=False):  # noqa
@@ -148,29 +139,30 @@ class Plugin(indigo.PluginBase):
         :param bool user_cancelled:
         :return:
         """
-        local_vars = {}
-
         if not user_cancelled:
-            local_vars['debug_label'] = {
-                10: "Debugging Messages",
-                20: "Informational Messages",
-                30: "Warning Messages",
-                40: "Error Messages",
-                50: "Critical Errors Only"
-            }
-            self.debugLevel       = int(values_dict['showDebugLevel'])
-            self.update_frequency = int(values_dict.get('pluginRefresh', 15))
-            self.indigo_log_handler.setLevel(self.debugLevel)
+            # Ensure that self.pluginPrefs includes any recent changes.
+            for k in values_dict:
+                self.pluginPrefs[k] = values_dict[k]
+
+            # Debug Logging
+            self.debug_level = int(values_dict['showDebugLevel'])
+            self.indigo_log_handler.setLevel(self.debug_level)
             indigo.server.log(
-                f"Debugging set to: {local_vars['debug_label'][self.debugLevel]}"
+                f"Debugging on (Level: {DEBUG_LABELS[self.debug_level]} ({self.debug_level})"
             )
+
+            # Plugin-specific actions
+            self.update_frequency = int(values_dict.get('pluginRefresh', 15))
 
             # Update the devices to reflect any changes
             self.announcement_update_states()
 
-            # Ensure that self.pluginPrefs includes any recent changes.
-            for k in values_dict:
-                self.pluginPrefs[k] = values_dict[k]
+            self.logger.debug("Plugin prefs saved.")
+
+        else:
+            self.logger.debug("Plugin prefs cancelled.")
+
+        return values_dict
 
     # =============================================================================
     @staticmethod
@@ -290,13 +282,24 @@ class Plugin(indigo.PluginBase):
         # =========================== Audit Indigo Version ============================
         self.Fogbert.audit_server_version(min_ver=2022)
 
+        # ============================= Audit Announcements ============================
+        path_string             = "/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt"
+        self.announcements_file = f"{indigo.server.getInstallFolderPath()}{path_string}"
+        self.initialize_announcements_file()
+
         # ============= Delete Out of Date Announcements ===============
         # Open the announcements file and load the contents
         with open(self.announcements_file, mode='r', encoding="utf-8") as ann_file:
             infile = ann_file.read()
 
         # Convert the string implementation of the dict to an actual dict.
-        infile = ast.literal_eval(infile)
+        try:
+            infile = ast.literal_eval(infile)
+        except SyntaxError:
+            self.stopPlugin(
+                f"Plugin terminating due to incompatible announcement file. Please reach out for "
+                f"assistance or examine file located at {self.announcements_file}"
+            )
 
         # Look at each plugin device id and delete any announcements if there is no longer an
         # associated device.
@@ -650,15 +653,16 @@ class Plugin(indigo.PluginBase):
             temp_dict[index]['Announcement'] = values_dict['announcementText']
             temp_dict[index]['Refresh']      = values_dict['announcementRefresh']
 
-        # User has created a new announcement with a name already in use
+        # User has created a new announcement with a name already in use. We add ' X' to the name
+        # and write a warning to the log.
         else:
             index = self.announcement_create_id(temp_dict=temp_dict)
             temp_dict[index]                 = {}
-            temp_dict[index]['Name']         = values_dict['announcementName'] + '*'
+            temp_dict[index]['Name']         = values_dict['announcementName'] + ' X'
             temp_dict[index]['Announcement'] = values_dict['announcementText']
             temp_dict[index]['Refresh']      = values_dict['announcementRefresh']
             temp_dict[index]['nextRefresh']  = f"{dt.datetime.now()}"
-            self.logger.error("Duplicate announcement name found.")
+            self.logger.warning("Duplicate announcement name found. Temporary correction applied.")
 
         # Set the dict element equal to the new list
         announcements[dev_id] = temp_dict
@@ -771,7 +775,7 @@ class Plugin(indigo.PluginBase):
 
         :param: class 'bool' force:
         """
-        self.logger.debug("Updating states")
+        self.logger.debug("Updating announcement states")
 
         now = indigo.server.getTime()
 
@@ -1084,7 +1088,8 @@ class Plugin(indigo.PluginBase):
             announcement_id = int(values_dict['announcementDeviceToRefresh'])
             if announcement_id in indigo.devices:
                 result = [
-                    (state, state.replace("_", " ")) for state in indigo.devices[announcement_id].states
+                    (state, state.replace("_", " "))
+                    for state in indigo.devices[announcement_id].states
                     if 'onOffState' not in state
                 ]
             else:
@@ -1258,6 +1263,11 @@ class Plugin(indigo.PluginBase):
 
         # If there's no file at all, lets establish a new empty Announcements dict.
         if not os.path.isfile(self.announcements_file):
+            self.logger.warning(
+                "Announcements file not found. Creating a placeholder file. If a configured "
+                "announcements device should be present, reach out for assistance or consult "
+                "server back-up files."
+            )
             with open(self.announcements_file, mode='w+', encoding="utf-8") as outfile:
                 outfile.write("{}")
             self.sleep(1)
