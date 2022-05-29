@@ -45,7 +45,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2022.0.1'
+__version__   = '2022.0.2'
 
 
 # ==============================================================================
@@ -747,7 +747,7 @@ class Plugin(indigo.PluginBase):
         item_to_speak = plugin_action.props['announcementToSpeak']
 
         try:
-            if item_source in indigo.devices:
+            if indigo.devices[item_source] in indigo.devices:
                 announcement = f"{indigo.devices[item_source].states[item_to_speak]}"
                 indigo.server.speak(announcement, waitUntilDone=False)
             else:

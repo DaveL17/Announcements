@@ -1,5 +1,8 @@
 Announcements Indigo Plugin - Developed by: DaveL17
 
+v2022.0.2
+- Fixes bug in `Speak Announcement` action item where executing action doesn't result in spoken announcement.
+
 v2022.0.1
 - Updates plugin for Indigo 2022.1 and Python 3.
 - Adds new Action Item to force refresh of all announcements.
