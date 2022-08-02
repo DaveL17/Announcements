@@ -10,27 +10,21 @@ audio announcements; however, the plugin is more geared towards creating announc
 with more advanced speech tools.
 """
 
-# =================================== TO DO ===================================
-
-# TODO - Convert announcements file to JSON.
-
 # ================================== IMPORTS ==================================
 
 # Built-in modules
 import ast
 import datetime as dt
-# import json
 import logging
 import os
 import re
 import shutil
 import string
-from dateutil import parser
 
 # Third-party modules
 try:
     import indigo  # noqa
-#     import pydevd_pycharm
+    from dateutil import parser  # noqa
 except ImportError as error:
     pass
 
@@ -45,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2022.0.2'
+__version__   = '2022.0.4'
 
 
 # ==============================================================================
@@ -80,10 +74,10 @@ class Plugin(indigo.PluginBase):
         )
         self.indigo_log_handler.setLevel(self.debug_level)
 
+        foo = logging.getLogger("plugin_file_handler")
+
         # =========================== Initialize DLFramework ===========================
         self.Fogbert = Dave.Fogbert(self)
-        # Log pluginEnvironment information when plugin is first started
-        self.Fogbert.pluginEnvironment()
 
         # ============================= Remote Debugging ==============================
         # try:
@@ -98,6 +92,12 @@ class Plugin(indigo.PluginBase):
         #     pass
 
         self.pluginIsInitializing = False
+
+    def log_plugin_environment(self):
+        """
+        Log pluginEnvironment information when plugin is first started
+        """
+        self.Fogbert.pluginEnvironment()
 
     # ==============================================================================
     def __del__(self):
