@@ -1,4 +1,7 @@
 
+### v2022.0.5
+- Fixes bug where announcements were not being automatically updated.
+
 ### v2022.0.4
 - Adds foundation for API `3.1`.
  

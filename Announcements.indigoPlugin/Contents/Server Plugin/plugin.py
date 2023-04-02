@@ -4,10 +4,9 @@
 Announcements Indigo Plugin
 Author: DaveL17
 
-The Announcements Plugin is used to construct complex announcements for use with text-to-speech
-tools in Indigo. The plugin provides a simple call to the indigo.server.speak() hook for simple
-audio announcements; however, the plugin is more geared towards creating announcements to be used
-with more advanced speech tools.
+The Announcements Plugin is used to construct complex announcements for use with text-to-speech tools in Indigo. The
+plugin provides a simple call to the indigo.server.speak() hook for simple audio announcements; however, the plugin is
+more geared towards creating announcements to be used with more advanced speech tools.
 """
 
 # ================================== IMPORTS ==================================
@@ -39,7 +38,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2022.0.4'
+__version__   = '2022.0.5'
 
 
 # ==============================================================================
@@ -68,26 +67,18 @@ class Plugin(indigo.PluginBase):
         self.update_frequency     = int(self.pluginPrefs.get('pluginRefresh', 15))
 
         # ================================== Logging ===================================
-        log_format = '%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s'
+        log_format = '%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(message)s'
         self.plugin_file_handler.setFormatter(
             logging.Formatter(fmt=log_format, datefmt='%Y-%m-%d %H:%M:%S')
         )
         self.indigo_log_handler.setLevel(self.debug_level)
-
-        foo = logging.getLogger("plugin_file_handler")
 
         # =========================== Initialize DLFramework ===========================
         self.Fogbert = Dave.Fogbert(self)
 
         # ============================= Remote Debugging ==============================
         # try:
-        #     pydevd.settrace(
-        #         'localhost',
-        #         port=5678,
-        #         stdoutToServer=True,
-        #         stderrToServer=True,
-        #         suspend=False
-        #     )
+        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
         # except:
         #     pass
 
@@ -147,16 +138,13 @@ class Plugin(indigo.PluginBase):
             # Debug Logging
             self.debug_level = int(values_dict['showDebugLevel'])
             self.indigo_log_handler.setLevel(self.debug_level)
-            indigo.server.log(
-                f"Debugging on (Level: {DEBUG_LABELS[self.debug_level]} ({self.debug_level})"
-            )
+            indigo.server.log(f"Debugging on (Level: {DEBUG_LABELS[self.debug_level]} ({self.debug_level})")
 
             # Plugin-specific actions
             self.update_frequency = int(values_dict.get('pluginRefresh', 15))
 
             # Update the devices to reflect any changes
             self.announcement_update_states()
-
             self.logger.debug("Plugin prefs saved.")
 
         else:
@@ -267,7 +255,7 @@ class Plugin(indigo.PluginBase):
         try:
             while True:
                 self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
-                # self.announcement_update_states()
+                self.announcement_update_states()
                 self.sleep(self.update_frequency)
         except self.StopThread:
             pass
@@ -297,8 +285,8 @@ class Plugin(indigo.PluginBase):
             infile = ast.literal_eval(infile)
         except SyntaxError:
             self.stopPlugin(
-                f"Plugin terminating due to incompatible announcement file. Please reach out for "
-                f"assistance or examine file located at {self.announcements_file}"
+                f"Plugin terminating due to incompatible announcement file. Please reach out for assistance or examine "
+                f"file located at {self.announcements_file}"
             )
 
         # Look at each plugin device id and delete any announcements if there is no longer an
@@ -334,8 +322,7 @@ class Plugin(indigo.PluginBase):
         error_msg_dict = indigo.Dict()
         local_vars = {}
 
-        # Announcements device - Note that we do validation for Announcements Device entries
-        # elsewhere in the code.
+        # Announcements device - Note that we do validation for Announcements Device entries elsewhere in the code.
         if type_id == 'announcementsDevice':
             return True, values_dict
 
@@ -358,9 +345,7 @@ class Plugin(indigo.PluginBase):
 
         except ValueError:
             for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
-                error_msg_dict[key] = (
-                    "You must set *all* the time controls to proceed. Otherwise, select cancel."
-                )
+                error_msg_dict[key] = "You must set *all* the time controls to proceed. Otherwise, select cancel."
 
         if len(error_msg_dict) > 0:
             return False, values_dict, error_msg_dict
@@ -402,9 +387,9 @@ class Plugin(indigo.PluginBase):
         """
         Create a unique ID number for the announcement
 
-        In order to properly track the various announcement strings, we must assign
-        each one a unique ID number. We check to see if the number has already been
-        assigned to another announcement and, if not, the new ID is assigned.
+        In order to properly track the various announcement strings, we must assign each one a unique ID number. We
+        check to see if the number has already been assigned to another announcement and, if not, the new ID is
+        assigned.
 
         :param dict temp_dict:
         :return int:
@@ -536,8 +521,8 @@ class Plugin(indigo.PluginBase):
         """
         Refresh an announcement in response to Indigo Action call
 
-        The announcement_refresh_action() method is used to force an announcement to be refreshed
-        by using an Indigo Action Item.
+        The announcement_refresh_action() method is used to force an announcement to be refreshed by using an Indigo
+        Action Item.
 
         :param indigo.actionGroup plugin_action:
         """
@@ -549,8 +534,7 @@ class Plugin(indigo.PluginBase):
         with open(self.announcements_file, mode='r', encoding="utf-8") as infile:
             announcements = infile.read()
 
-        # Convert the string implementation of the dict to an actual dict, and get the sub dict
-        # for the device.
+        # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
         announcements = ast.literal_eval(node_or_string=announcements)
 
         # Iterate through the keys to find the right announcement to update.
@@ -575,6 +559,7 @@ class Plugin(indigo.PluginBase):
         :param int dev_id:
         :return indigo.Dict values_dict:
         """
+
         error_msg_dict = indigo.Dict()
 
         # ===================== Validation Methods =====================
@@ -614,14 +599,13 @@ class Plugin(indigo.PluginBase):
 
         if len(error_msg_dict) > 0:
             error_msg_dict['showAlertText'] = (
-                "Configuration Errors\n\nThere are one or more settings that need to be corrected. "
-                "Fields requiring attention will be highlighted."
+                "Configuration Errors\n\nThere are one or more settings that need to be corrected. Fields requiring "
+                "attention will be highlighted."
             )
             return values_dict, error_msg_dict
 
         # =====================================================================
-        # There are no validation errors, so let's continue. Open the announcements file and load
-        # the contents
+        # There are no validation errors, so let's continue. Open the announcements file and load the contents
         with open(self.announcements_file, mode='r', encoding="utf-8") as outfile:
             announcements = outfile.read()
 
@@ -689,9 +673,8 @@ class Plugin(indigo.PluginBase):
         """
         Speak the selected announcement
 
-        Called when user clicks the Speak Announcement button. If an announcement is selected in
-        the list, that is the announcement that will be spoken, if there is announcement data in
-        the text fields, that will be what is spoken.
+        Called when user clicks the Speak Announcement button. If an announcement is selected in the list, that is the
+        announcement that will be spoken, if there is announcement data in the text fields, that will be what is spoken.
 
         :param indigo.Dict values_dict:
         :param str type_id:
@@ -708,20 +691,16 @@ class Plugin(indigo.PluginBase):
             indigo.server.speak(result, waitUntilDone=False)
             self.logger.info(f"{result}")
 
-        # If the announcement field is blank, and the user has selected an announcement in the
-        # list.
+        # If the announcement field is blank, and the user has selected an announcement in the list.
         elif values_dict['announcementList'] != "":
             # Open the announcements file and load the contents
             with open(self.announcements_file, mode='r', encoding="utf-8") as infile:
                 announcements = infile.read()
 
-            # Convert the string implementation of the dict to an actual dict, and get the sub
-            # dict for the device.
+            # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
             announcements = ast.literal_eval(node_or_string=announcements)
 
-            announcement = self.substitute(
-                announcements[dev_id][int(values_dict['announcementList'])]['Announcement']
-            )
+            announcement = self.substitute(announcements[dev_id][int(values_dict['announcementList'])]['Announcement'])
             result = self.substitution_regex(announcement=announcement)
             indigo.server.speak(result, waitUntilDone=False)
 
@@ -767,11 +746,10 @@ class Plugin(indigo.PluginBase):
         """
         Update the state values of each announcement
 
-        Refresh the custom state values of select announcements. The user sets a preference for how
-        often the plugin will cycle, and a per-announcement refresh cycle.  For example, the plugin
-        will check every X seconds to see if any announcements require a refresh. The determination
-        is based on the setting for each announcement and the amount of time that has transpired
-        since it was last refreshed.
+        Refresh the custom state values of select announcements. The user sets a preference for how often the plugin
+        will cycle, and a per-announcement refresh cycle.  For example, the plugin will check every X seconds to see if
+        any announcements require a refresh. The determination is based on the setting for each announcement and the
+        amount of time that has transpired since it was last refreshed.
 
         :param: class 'bool' force:
         """
@@ -808,27 +786,19 @@ class Plugin(indigo.PluginBase):
                     # Determine proper salutation based on the current time.
                     if morning <= now < afternoon:
                         intro_value = dev.pluginProps.get('morningMessageIn', 'Good morning.')
-                        outro_value = dev.pluginProps.get(
-                            'morningMessageOut', 'Have a great morning.'
-                        )
+                        outro_value = dev.pluginProps.get('morningMessageOut', 'Have a great morning.')
 
                     elif afternoon <= now < evening:
                         intro_value = dev.pluginProps.get('afternoonMessageIn', 'Good afternoon.')
-                        outro_value = dev.pluginProps.get(
-                            'afternoonMessageOut', 'Have a great afternoon.'
-                        )
+                        outro_value = dev.pluginProps.get('afternoonMessageOut', 'Have a great afternoon.')
 
                     elif evening <= now < night:
                         intro_value = dev.pluginProps.get('eveningMessageIn', 'Good evening.')
-                        outro_value = dev.pluginProps.get(
-                            'eveningMessageOut', 'Have a great evening.'
-                        )
+                        outro_value = dev.pluginProps.get('eveningMessageOut', 'Have a great evening.')
 
                     else:
                         intro_value = dev.pluginProps.get('nightMessageIn', 'Good night.')
-                        outro_value = dev.pluginProps.get(
-                            'nightMessageOut', 'Have a great night.'
-                        )
+                        outro_value = dev.pluginProps.get('nightMessageOut', 'Have a great night.')
 
                     # Don't update the device state unless the value has changed.
                     if intro_value != dev.states['intro']:
@@ -843,9 +813,8 @@ class Plugin(indigo.PluginBase):
                     dev.updateStatesOnServer(states_list)
 
                 elif dev.deviceTypeId == 'announcementsDevice':
-                    # Look at each plugin device and construct a placeholder if not already
-                    # present. This is a placeholder and doesn't actually write the key back
-                    # to the file.
+                    # Look at each plugin device and construct a placeholder if not already present. This is a
+                    # placeholder and doesn't actually write the key back to the file.
                     try:
                         if dev.id not in announcements:
                             announcements[dev.id] = {}
@@ -867,9 +836,7 @@ class Plugin(indigo.PluginBase):
                             # If it's time for an announcement to be refreshed.
                             if now >= update_time:
                                 # Update the announcement text.
-                                announcement = (
-                                    self.substitute(announcements[dev.id][key]['Announcement'])
-                                )
+                                announcement = self.substitute(announcements[dev.id][key]['Announcement'])
                                 result = self.substitution_regex(announcement)
                                 states_list.append({'key': state_name, 'value': result})
 
@@ -881,21 +848,15 @@ class Plugin(indigo.PluginBase):
                                     '%Y-%m-%d %H:%M:%S'
                                 )
                                 self.logger.debug(f"{announcements[dev.id][key]['Name']} updated.")
-                                states_list.append(
-                                    {'key': 'onOffState', 'value': True, 'uiValue': " "}
-                                )
+                                states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
                                 dev.updateStatesOnServer(states_list)
 
                             elif force:
                                 # Force an update the announcement text.
-                                announcement = (
-                                    self.substitute(announcements[dev.id][key]['Announcement'])
-                                )
+                                announcement = self.substitute(announcements[dev.id][key]['Announcement'])
                                 result = self.substitution_regex(announcement)
                                 states_list.append({'key': state_name, 'value': result})
-                                states_list.append(
-                                    {'key': 'onOffState', 'value': True, 'uiValue': " "}
-                                )
+                                states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
                                 dev.updateStatesOnServer(states_list)
 
                     except KeyError:
@@ -910,8 +871,8 @@ class Plugin(indigo.PluginBase):
         """
         Force announcements updates based on menu item call
 
-        The call to announcement_update_states() includes the attribute `force=True` which causes
-        announcements to be updated regardless of their update time.
+        The call to announcement_update_states() includes the attribute `force=True` which causes announcements to be
+        updated regardless of their update time.
 
         :return:
         """
@@ -922,8 +883,8 @@ class Plugin(indigo.PluginBase):
         """
         Force announcements updates based on menu item call
 
-        The call to announcement_update_states() includes the attribute `force=True` which causes
-        announcements to be updated regardless of their update time.
+        The call to announcement_update_states() includes the attribute `force=True` which causes announcements to be
+        updated regardless of their update time.
 
         :return:
         """
@@ -964,9 +925,8 @@ class Plugin(indigo.PluginBase):
         """
         Format announcement digits based on announcement criteria
 
-        The format_digits function determines the proper formatting routine to use when converting
-        target values to the specified format. It sends the target value to the proper function for
-        formatting.
+        The format_digits function determines the proper formatting routine to use when converting target values to the
+        specified format. It sends the target value to the proper function forformatting.
 
         :param re.match match:
         :return re.match result:
@@ -998,8 +958,8 @@ class Plugin(indigo.PluginBase):
         """
         Format announcement times based on announcement criteria
 
-        The format_current_time function is used to create a formatted version of the current time.
-        It's called when the format specifier is "ct:".
+        The format_current_time function is used to create a formatted version of the current time. It's called when
+        the format specifier is "ct:".
 
         :param str match1:
         :param str match2:
@@ -1023,8 +983,8 @@ class Plugin(indigo.PluginBase):
         """
         Format announcement datetime based on announcement criteria
 
-        The format_datetime function is used to format the string based on common Python datetime
-        format specifiers. It's called when the format specifier is "dt:".
+        The format_datetime function is used to format the string based on common Python datetimeformat specifiers.
+        It's called when the format specifier is "dt:".
 
         :param str match1:
         :param str match2:
@@ -1051,8 +1011,8 @@ class Plugin(indigo.PluginBase):
         """
         Format announcement number based on announcement criteria
 
-        The format_number function is used to format the string based on common Python numeric
-        format specifiers. It's called when the format specifier is "n:".
+        The format_number function is used to format the string based on common Python numeric format specifiers. It's
+        called when the format specifier is "n:".
 
         :param str match1:
         :param str match2:
@@ -1105,8 +1065,7 @@ class Plugin(indigo.PluginBase):
         """
         Generate a list of plugin-owned devices.
 
-        Returns a list of plugin devices. Returns a list of tuples in the form:
-        [(ID, "Name"), (ID, "Name")].
+        Returns a list of plugin devices. Returns a list of tuples in the form: [(ID, "Name"), (ID, "Name")].
 
         :param str fltr:
         :param indigo.Dict values_dict:
@@ -1121,8 +1080,8 @@ class Plugin(indigo.PluginBase):
         """
         Generate a list of Indigo devices and variables.
 
-        This method collects IDs and names for all Indigo devices and variables. It creates a list
-        of the form: [(dev.id, dev.name), (var.id, var.name)].
+        This method collects IDs and names for all Indigo devices and variables. It creates a list of the form:
+        [(dev.id, dev.name), (var.id, var.name)].
 
         :param str fltr:
         :param indigo.Dict values_dict:
@@ -1137,8 +1096,8 @@ class Plugin(indigo.PluginBase):
         """
         Generate a list of configured announcements
 
-        Populates the list of announcements based on the device's states. Returns a list based on a
-        dict (infile) of the form:
+        Populates the list of announcements based on the device's states. Returns a list based on a dict (infile) of
+        the form:
 
         {'announcement ID':
           {'Announcement': "announcement string",
@@ -1160,8 +1119,7 @@ class Plugin(indigo.PluginBase):
         with open(self.announcements_file, mode='r', encoding='utf-8') as input_file:
             infile = input_file.read()
 
-        # Convert the string implementation of the dict to an actual dict, and get the sub dict for
-        # the device.
+        # Convert the string implementation of the dict to an actual dict, and get the sub dict for the device.
         infile = ast.literal_eval(node_or_string=infile)
 
         # Sort the dict and create a list of tuples for the device config list control.
@@ -1180,8 +1138,8 @@ class Plugin(indigo.PluginBase):
         """
         Return a list of device states or variable value for selected device
 
-        The generator_state_or_value() method returns a list to populate the relevant device states
-        or variable value to populate a menu control.
+        The generator_state_or_value() method returns a list to populate the relevant device states or variable value
+        to populate a menu control.
 
         :param str fltr:
         :param indigo.Dict values_dict:
@@ -1197,8 +1155,8 @@ class Plugin(indigo.PluginBase):
         """
         Generate an Indigo substitution string
 
-        The generator_substitutions function is used with the Substitution Generator. It is the
-        callback that's used to create the Indigo substitution construct.
+        The generator_substitutions function is used with the Substitution Generator. It is the callback that's used to
+        create the Indigo substitution construct.
 
         :param indigo.Dict values_dict:
         :param str type_id:
@@ -1232,8 +1190,7 @@ class Plugin(indigo.PluginBase):
         """
         Generate a list of hours for plugin control menus
 
-        Creates a list of times for use in setting salutation settings of the form:
-        [(0, "00:00"), (1, "01:00"), ...]
+        Creates a list of times for use in setting salutation settings of the form:[(0, "00:00"), (1, "01:00"), ...]
 
         :param str fltr:
         :param indigo.Dict values_dict:
@@ -1264,9 +1221,8 @@ class Plugin(indigo.PluginBase):
         # If there's no file at all, lets establish a new empty Announcements dict.
         if not os.path.isfile(self.announcements_file):
             self.logger.warning(
-                "Announcements file not found. Creating a placeholder file. If a configured "
-                "announcements device should be present, reach out for assistance or consult "
-                "server back-up files."
+                "Announcements file not found. Creating a placeholder file. If a configured  announcements device "
+                "should be present, reach out for assistance or consult server back-up files."
             )
             with open(self.announcements_file, mode='w+', encoding="utf-8") as outfile:
                 outfile.write("{}")
@@ -1277,8 +1233,8 @@ class Plugin(indigo.PluginBase):
         """
         Dummy callback to force dynamic control refreshes
 
-        The refresh_fields() method is a dummy callback used solely to fire other actions that
-        require a callback be run. It performs no other function.
+        The refresh_fields() method is a dummy callback used solely to fire other actions that require a callback be
+        run. It performs no other function.
 
         :param str fltr:
         :param str type_id:
@@ -1291,8 +1247,8 @@ class Plugin(indigo.PluginBase):
         """
         Regex method for formatting substitutions.
 
-        This is the main regex used for formatting substitutions. The only possible matches are
-        expressly listed in the pattern. Currently, supported matches are --> ct:, dt:, n:
+        This is the main regex used for formatting substitutions. The only possible matches are expressly listed in the
+        pattern. Currently, supported matches are --> ct:, dt:, n:
 
         :param str announcement:  The announcement string to be parsed.
         :return re.match: (announcement), (format specifier).
