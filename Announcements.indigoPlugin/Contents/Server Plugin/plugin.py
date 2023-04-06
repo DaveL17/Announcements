@@ -14,6 +14,7 @@ more geared towards creating announcements to be used with more advanced speech 
 # Built-in modules
 import ast
 import datetime as dt
+import json
 import logging
 import os
 import re
@@ -38,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2022.0.5'
+__version__   = '2022.0.6'
 
 
 # ==============================================================================
@@ -682,6 +683,7 @@ class Plugin(indigo.PluginBase):
         :return indigo.Dict values_dict:
         """
         default_string = "Please select or enter an item to speak."
+        result = ""
 
         # The user has entered a value in the announcement field. Speak that.
         if len(values_dict['announcementText']) > 0:
@@ -711,7 +713,35 @@ class Plugin(indigo.PluginBase):
             self.logger.error(default_string)
             indigo.server.speak(default_string, waitUntilDone=False)
 
+        # If enabled in plugin prefs, save copy of the current announcement to variable called
+        # 'spoken_announcement_raw'.
+        try:
+            if self.pluginPrefs.get('saveToVariable', False):
+                indigo.variable.updateValue('spoken_announcement_raw', result)
+                indigo.server.log(f"Announcement saved to variable named: `spoken_announcement_raw`")
+        # Variable does not exist.
+        except ValueError as err:
+            self.logger.warning(f"Please create an Indigo variable named: 'spoken_announcement_raw'.")
         return values_dict
+
+    # =============================================================================
+    def announcements_export_action(self, pluginAction):
+        """
+        Return a copy of the announcements database in JSON format
+
+        The call to announcements_export() is a request to receive a copy of the announcements database in JSON format.
+        It will be provided agnostically; the complete database will be provided.
+
+        :return:
+        """
+        # Open the announcements file and load the contents
+        with open(self.announcements_file, mode='r', encoding="utf-8") as infile:
+            announcements = infile.read()
+
+        # Convert the string implementation of the dict to an actual dict, and delete the key.
+        announcements = ast.literal_eval(node_or_string=announcements)
+
+        return json.dumps(announcements)
 
     # =============================================================================
     def announcement_speak_action(self, plugin_action):

@@ -24,6 +24,14 @@
         <Label>Enter the number of seconds between announcement refreshes.</Label>
     </Field>
 
+	<Field id="saveToVariable" type="checkbox" defaultValue="false" tooltip="Check to save announcement to a variable when Speak Announcement button is pressed.">
+		<Label>Save to Variable</Label>
+	</Field>
+
+	<Field id="infoLabel2" type="label" fontSize="small" alignWithControl="true">
+		<Label>Save announcement to variable `spoken_announcement_raw` when the Speak Announcement button is pressed. The variable will not be created if missing. See wiki for more information.</Label>
+	</Field>
+
     <!-- Debugging Template -->
     <Template file="DLFramework/template_debugging.xml"/>
 

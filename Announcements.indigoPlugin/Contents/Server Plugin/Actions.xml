@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <Actions>
 
+    <Action id="exportAnnouncements" uiPath="hidden">
+        <Name>Export Announcements</Name>
+        <CallbackMethod>announcements_export_action</CallbackMethod>
+    </Action>
+
     <Action id="refreshAnnouncementData" uiPath="DeviceActions">
         <Name>Refresh Announcement</Name>
         <CallbackMethod>announcement_refresh_action</CallbackMethod>

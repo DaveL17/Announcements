@@ -1,4 +1,8 @@
 
+### v2022.0.6
+- Adds function to mirror Speak Text value to a designated variable.
+- Adds scripting action to request a copy of the announcements database.
+
 ### v2022.0.5
 - Fixes bug where announcements were not being automatically updated.
 
