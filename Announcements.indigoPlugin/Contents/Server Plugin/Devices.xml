@@ -75,31 +75,31 @@
             <Field id="announcement_save" type="button" tooltip="Please complete all fields and then click Save Announcement.">
                 <Label/>
                 <Title>Save Announcement</Title>
-                <CallbackMethod>announcement_save</CallbackMethod>
+                <CallbackMethod>__announcement_save__</CallbackMethod>
             </Field>
 
             <Field id="announcement_edit" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Edit Announcement.">
                 <Label/>
                 <Title>Edit Announcement</Title>
-                <CallbackMethod>announcement_edit</CallbackMethod>
+                <CallbackMethod>__announcement_edit__</CallbackMethod>
             </Field>
 
             <Field id="announcement_delete" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Delete Announcement. CAUTION! Announcements are deleted instantly and permanently.">
                 <Label/>
                 <Title>Delete Announcement</Title>
-                <CallbackMethod>announcement_delete</CallbackMethod>
+                <CallbackMethod>__announcement_delete__</CallbackMethod>
             </Field>
 
             <Field id="announcement_duplicate" type="button" enabledBindingId="announcementList" tooltip="Please select an announcement from the list above and click Duplicate Announcement to create a copy of an existing announcement.">
                 <Label/>
                 <Title>Duplicate Announcement</Title>
-                <CallbackMethod>announcement_duplicate</CallbackMethod>
+                <CallbackMethod>__announcement_duplicate__</CallbackMethod>
             </Field>
 
             <Field id="announcement_clear" type="button" tooltip="Remove all text from the text fields.">
                 <Label/>
                 <Title>Clear Fields</Title>
-                <CallbackMethod>announcement_clear</CallbackMethod>
+                <CallbackMethod>__announcement_clear__</CallbackMethod>
             </Field>
 
             <!-- Substitution Generator -->
@@ -144,13 +144,6 @@
             <Field id="announcementIndex" type="textfield" readonly="true" tooltip="The unique index ID for the announcement." hidden="true">
                 <Label>Index</Label>
             </Field>
-
-            <!--These fields show how to display validation results from a callback.-->
-            <!--<Field id="msgTestSuccess" type="label" visibleBindingId="msgControl" visibleBindingValue="1" fontColor="red">-->
-                <!--<Label>ALERT</Label>-->
-            <!--</Field>-->
-            <!--<Field id='msgControl' type='textfield' defaultValue='0' hidden='true'>-->
-            <!--</Field>-->
 
 		</ConfigUI>
 

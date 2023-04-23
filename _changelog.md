@@ -1,7 +1,18 @@
 
+### v2022.0.7
+- Now stores Announcements file as JSON. Will convert legacy database if needed.
+- Consolidates file IO code.
+  - `__announcement_file_read__()` (new)
+  - `__announcement_file_write__()` (new)
+- Breaks down state update code.
+  - `announcement_update_states()`
+    - `update_salutations_device()` (new)
+    - `update_announcements_device()` (new)
+- Code cleanup.
+
 ### v2022.0.6
 - Adds function to mirror Speak Text value to a designated variable.
-- Adds scripting action to request a copy of the announcements database.
+- Adds scripting action to request a copy of the Announcements database.
 
 ### v2022.0.5
 - Fixes bug where announcements were not being automatically updated.
