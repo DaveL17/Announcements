@@ -1,4 +1,8 @@
 
+### v2023.0.1
+- Moves saved spoken_announcement_raw to variable log message to debug level.
+- Code enhancements.
+
 ### v2022.0.7
 - Now stores Announcements file as JSON. Will convert legacy database if needed.
 - Consolidates file IO code.
@@ -87,7 +91,7 @@
 - Fixes bug in substitution generator where generator was returning only plugin devices.
 
 ### v1.0.07
-- Synchronize self.pluginPrefs in closedPrefsConfigUi().
+- Synchronize self.pluginPrefs in closed_prefs_config_ui().
 
 ### v1.0.06
 - Changes "En/Disable all Announcements Devices" to "En/Disable all Plugin Devices".

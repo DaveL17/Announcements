@@ -40,7 +40,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2022.0.7'
+__version__   = '2023.0.1'
 
 
 # ==============================================================================
@@ -51,7 +51,8 @@ class Plugin(indigo.PluginBase):
     :param indigo.PluginBase:
     """
 
-    def __init__(self, plugin_id="", plugin_display_name="", plugin_version="", plugin_prefs=None):
+    def __init__(self, plugin_id: str="", plugin_display_name: str="", plugin_version: str="",
+                 plugin_prefs: indigo.Dict=None):
         """
         Plugin initialization
 
@@ -78,10 +79,10 @@ class Plugin(indigo.PluginBase):
         self.Fogbert = Dave.Fogbert(self)
 
         # ============================= Remote Debugging ==============================
-        try:
-            pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-        except:
-            pass
+        # try:
+        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        # except:
+        #     pass
 
         self.pluginIsInitializing = False
 
@@ -103,7 +104,7 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     # ============================== Indigo Methods ===============================
     # =============================================================================
-    def closedDeviceConfigUi(self, values_dict=None, user_cancelled=False, type_id="", dev_id=0):  # noqa
+    def closed_device_config_ui(self, values_dict: indigo.Dict=None, user_cancelled: bool=False, type_id: str= "", dev_id: int=0):  # noqa
         """
         Standard Indigo method called when device preferences dialog is closed.
 
@@ -115,12 +116,12 @@ class Plugin(indigo.PluginBase):
         """
         if not user_cancelled:
             self.announcement_update_states(force=True)
-            self.logger.debug("closedDeviceConfigUi()")
+            self.logger.debug("closed_device_config_ui()")
         else:
             self.logger.debug("Device configuration cancelled.")
 
     # =============================================================================
-    def closedPrefsConfigUi(self, values_dict=None, user_cancelled=False):  # noqa
+    def closed_prefs_config_ui(self, values_dict: indigo.Dict=None, user_cancelled: bool=False):  # noqa
         """
         Standard Indigo method called when plugin preferences dialog is closed.
 
@@ -152,7 +153,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def deviceStartComm(dev):  # noqa
+    def device_start_comm(dev: indigo.Device):  # noqa
         """
         Standard Indigo method when device comm enabled
 
@@ -164,7 +165,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def deviceStopComm(dev):  # noqa
+    def device_stop_comm(dev: indigo.Device):  # noqa
         """
         Standard Indigo method when device comm enabled
 
@@ -175,7 +176,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def getDeviceConfigUiValues(values_dict=None, type_id="", dev_id=0):  # noqa
+    def get_device_config_ui_values(values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Standard Indigo method when device config menu opened.
 
@@ -201,7 +202,7 @@ class Plugin(indigo.PluginBase):
         return values_dict
 
     # =============================================================================
-    def getDeviceStateList(self, dev=None):  # noqa
+    def get_device_state_list(self, dev: indigo.Device=None):  # noqa
         """
         Standard Indigo method to provide dynamic state list definition information.
 
@@ -237,7 +238,7 @@ class Plugin(indigo.PluginBase):
         return default_states_list
 
     # =============================================================================
-    def runConcurrentThread(self):  # noqa
+    def run_concurrent_thread(self):  # noqa
         """
         Standard Indigo Concurrent Thread
 
@@ -285,7 +286,7 @@ class Plugin(indigo.PluginBase):
         self.__announcement_file_write__(infile)
 
     # =============================================================================
-    def validateDeviceConfigUi(self, values_dict=None, type_id="", dev_id=0):  # noqa
+    def validate_device_config_ui(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Standard Indigo method called before device config dialog is closed.
 
@@ -326,7 +327,7 @@ class Plugin(indigo.PluginBase):
     # ============================== Plugin Methods ===============================
     # =============================================================================
     @staticmethod
-    def __announcement_clear__(values_dict=None, type_id="", target_id=0):  # noqa
+    def __announcement_clear__(values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Clear announcement data from input field
 
@@ -352,7 +353,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def announcement_create_id(temp_dict=None):  # noqa
+    def announcement_create_id(temp_dict: dict=None):  # noqa
         """
         Create a unique ID number for the announcement
 
@@ -375,7 +376,7 @@ class Plugin(indigo.PluginBase):
         return local_vars['index']
 
     # =============================================================================
-    def __announcement_delete__(self, values_dict=None, type_id="", dev_id=0):  # noqa
+    def __announcement_delete__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Delete the highlighted announcement
 
@@ -409,7 +410,7 @@ class Plugin(indigo.PluginBase):
         return values_dict
 
     # =============================================================================
-    def __announcement_duplicate__(self, values_dict=None, type_id="", dev_id=0):  # noqa
+    def __announcement_duplicate__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Create a duplicate of the selected announcement
 
@@ -444,7 +445,7 @@ class Plugin(indigo.PluginBase):
         return values_dict
 
     # =============================================================================
-    def __announcement_edit__(self, values_dict=None, type_id="", dev_id=0):  # noqa
+    def __announcement_edit__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Load the selected announcement for editing
 
@@ -496,19 +497,20 @@ class Plugin(indigo.PluginBase):
         return {int(key): value for key, value in d.items()}
 
     # =============================================================================
-    def __announcement_file_write__(self, announcements):
+    def __announcement_file_write__(self, announcements: dict):
         """
         Write the selected announcement file to disk
 
-        :return indigo.Dict values_dict:
+        :param dict announcements:
+        :return bool:
         """
-        # Open the announcements file and load the contents
+        # Open the announcements file and write the contents
         with open(self.announcements_file, mode='w', encoding="utf-8") as outfile:
             json.dump(announcements, outfile, ensure_ascii=False, indent=4)
         return True
 
     # =============================================================================
-    def announcement_refresh_action(self, plugin_action):
+    def announcement_refresh_action(self, plugin_action: indigo.actionGroup):
         """
         Refresh an announcement in response to Indigo Action call
 
@@ -535,7 +537,7 @@ class Plugin(indigo.PluginBase):
         self.logger.info(f"Refreshed {announcement_name} announcement.")
 
     # =============================================================================
-    def __announcement_save__(self, values_dict=None, type_id="", dev_id=0):  # noqa
+    def __announcement_save__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Save the current announcement
 
@@ -646,7 +648,7 @@ class Plugin(indigo.PluginBase):
         return values_dict
 
     # =============================================================================
-    def announcement_speak(self, values_dict=None, type_id="", dev_id=0):  # noqa
+    def announcement_speak(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
         """
         Speak the selected announcement
 
@@ -683,11 +685,12 @@ class Plugin(indigo.PluginBase):
             indigo.server.speak(default_string, waitUntilDone=False)
 
         # If enabled in plugin prefs, save copy of the current announcement to variable called
-        # 'spoken_announcement_raw'.
+        # 'spoken_announcement_raw'. This is done to allow the Speak Announcement button to trigger speech in another
+        # application.
         try:
             if self.pluginPrefs.get('saveToVariable', False):
                 indigo.variable.updateValue('spoken_announcement_raw', result)
-                indigo.server.log("Announcement saved to variable: `spoken_announcement_raw`")
+                self.logger.debug("Announcement saved to variable: `spoken_announcement_raw`")
         # Variable does not exist.
         except ValueError:
             self.logger.warning(
@@ -697,21 +700,22 @@ class Plugin(indigo.PluginBase):
         return values_dict
 
     # =============================================================================
-    def announcements_export_action(self, plugin_action):  # noqa
+    def announcements_export_action(self, plugin_action: indigo.actionGroup):  # noqa
         """
         Return a copy of the announcements database in JSON format
 
         The call to announcements_export() is a request to receive a copy of the announcements database in JSON format.
         It will be provided agnostically; the complete database will be provided.
 
-        :return:
+        :param indigo.actionGroup plugin_action:
+        :return json:
         """
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
         return json.dumps(announcements)
 
     # =============================================================================
-    def announcement_speak_action(self, plugin_action):
+    def announcement_speak_action(self, plugin_action: indigo.actionGroup):
         """
         Speak an announcement in response to an Indigo action item
 
@@ -739,8 +743,12 @@ class Plugin(indigo.PluginBase):
             self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
-    def __update_salutations_device__(self, dev):
-        """ PLACEHOLDER """
+    def __update_salutations_device__(self, dev: indigo.Device):
+        """
+        Updates salutations device
+
+        :param indigo.Device dev:
+        """
         states_list = []
         now         = dt.datetime.now()
         today       = dt.datetime.today().date()
@@ -784,8 +792,15 @@ class Plugin(indigo.PluginBase):
         dev.updateStatesOnServer(states_list)
 
     # =============================================================================
-    def __update_announcements_device__(self, dev, announcements, force):
-        """ PLACEHOLDER """
+    def __update_announcements_device__(self, dev: indigo.Device, announcements: dict, force: bool=False):
+        """
+        Updates salutations device
+
+        :param indigo.Device dev:
+        :param dict announcements:
+        :param bool force:
+        :return dict announcements:
+        """
         now         = dt.datetime.now()
         states_list = []
 
@@ -836,7 +851,7 @@ class Plugin(indigo.PluginBase):
             return announcements
 
     # =============================================================================
-    def announcement_update_states(self, force=False):
+    def announcement_update_states(self, force: bool=False):
         """
         Update the state values of each announcement
 
@@ -845,7 +860,7 @@ class Plugin(indigo.PluginBase):
         any announcements require a refresh. The determination is based on the setting for each announcement and the
         amount of time that has transpired since it was last refreshed.
 
-        :param: class 'bool' force:
+        :param: bool force:
         """
         self.logger.debug("Updating announcement states")
 
@@ -880,7 +895,7 @@ class Plugin(indigo.PluginBase):
         self.announcement_update_states(force=True)
 
     # =============================================================================
-    def announcement_update_states_now_action(self, action=None):  # noqa
+    def announcement_update_states_now_action(self, action: indigo.actionGroup=None):  # noqa
         """
         Force announcements updates based on menu item call
 
@@ -922,7 +937,7 @@ class Plugin(indigo.PluginBase):
                 self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
-    def format_digits(self, match):
+    def format_digits(self, match: re.match):
         """
         Format announcement digits based on announcement criteria
 
@@ -955,7 +970,7 @@ class Plugin(indigo.PluginBase):
         return result
 
     # =============================================================================
-    def format_current_time(self, match1, match2):  # noqa
+    def format_current_time(self, match1: str, match2: str):  # noqa
         """
         Format announcement times based on announcement criteria
 
@@ -980,7 +995,7 @@ class Plugin(indigo.PluginBase):
             return f"Unallowable datetime specifiers: {match1} {match2}"
 
     # =============================================================================
-    def format_datetime(self, match1, match2):  # noqa
+    def format_datetime(self, match1: str, match2: str):  # noqa
         """
         Format announcement datetime based on announcement criteria
 
@@ -1008,7 +1023,7 @@ class Plugin(indigo.PluginBase):
             return f"Unallowable datetime specifiers: {match1} {match2}"
 
     # =============================================================================
-    def format_number(self, match1, match2):  # noqa
+    def format_number(self, match1: str, match2: str):  # noqa
         """
         Format announcement number based on announcement criteria
 
@@ -1033,7 +1048,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def generator_announcement_list(fltr="", values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_announcement_list(fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Generate a list of states for Indigo controls
 
@@ -1062,7 +1077,7 @@ class Plugin(indigo.PluginBase):
         return result
 
     # =============================================================================
-    def generator_device_list(self, fltr="", values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_device_list(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Generate a list of plugin-owned devices.
 
@@ -1077,7 +1092,7 @@ class Plugin(indigo.PluginBase):
         return self.Fogbert.deviceList(dev_filter='self')
 
     # =============================================================================
-    def generator_dev_var(self, fltr="", values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_dev_var(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Generate a list of Indigo devices and variables.
 
@@ -1093,7 +1108,7 @@ class Plugin(indigo.PluginBase):
         return self.Fogbert.deviceAndVariableList()
 
     # =============================================================================
-    def generator_list(self, fltr="", values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_list(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Generate a list of configured announcements
 
@@ -1131,7 +1146,7 @@ class Plugin(indigo.PluginBase):
         return announcements
 
     # =============================================================================
-    def generator_state_or_value(self, fltr="", values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_state_or_value(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Return a list of device states or variable value for selected device
 
@@ -1148,7 +1163,7 @@ class Plugin(indigo.PluginBase):
         return self.Fogbert.generatorStateOrValue(dev_id=id_number)
 
     # =============================================================================
-    def generator_substitutions(self, values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_substitutions(self, values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Generate an Indigo substitution string
 
@@ -1183,7 +1198,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def generator_time(fltr="", values_dict=None, type_id="", target_id=0):  # noqa
+    def generator_time(fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0):  # noqa
         """
         Generate a list of hours for plugin control menus
 
@@ -1221,11 +1236,11 @@ class Plugin(indigo.PluginBase):
                 "Announcements file not found. Creating a placeholder file. If a configured announcements device "
                 "should be present, reach out for assistance or consult server back-up files."
             )
-            self.__announcement_file_write__("{}")
+            self.__announcement_file_write__({})
             self.sleep(1)
 
     # =============================================================================
-    def refresh_fields(self, fltr="", type_id="", target_id=0):  # noqa
+    def refresh_fields(self, fltr: str="", type_id: str="", target_id: str=0):  # noqa
         """
         Dummy callback to force dynamic control refreshes
 
@@ -1239,7 +1254,7 @@ class Plugin(indigo.PluginBase):
         self.logger.debug("refresh_fields()")
 
     # =============================================================================
-    def substitution_regex(self, announcement):
+    def substitution_regex(self, announcement: str):
         """
         Regex method for formatting substitutions.
 
