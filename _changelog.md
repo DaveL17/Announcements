@@ -1,3 +1,10 @@
+### v2024.1.0
+
+
+### v2023.1.0
+- Deprecates Indigo server version check in favor of plist API value.
+- Embeds some unit tests (more to come).
+- Code refinements.
 
 ### v2023.0.1
 - Moves saved spoken_announcement_raw to variable log message to debug level.
