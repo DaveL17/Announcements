@@ -1,5 +1,6 @@
 ### v2024.1.0
-
+- Improves unit testing.
+- Code refinements and enhancements.
 
 ### v2023.1.0
 - Deprecates Indigo server version check in favor of plist API value.

@@ -85,16 +85,12 @@ class Plugin(indigo.PluginBase):
 
         self.pluginIsInitializing = False
 
-    def log_plugin_environment(self):
-        """
-        Log pluginEnvironment information when plugin is first started
-        """
-        self.Fogbert.pluginEnvironment()
-
     # ==============================================================================
     def __del__(self):
         """
-        Title Placeholder
+        The destructor for the class.
+
+        We call the super class’s method to ensure that things are destroyed grascefully:
 
         :return:
         """
@@ -283,7 +279,7 @@ class Plugin(indigo.PluginBase):
         self.__announcement_file_write__(infile)
 
     # =============================================================================
-    def validate_device_config_ui(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0):  # noqa
+    def validate_device_config_ui(self, values_dict: indigo.Dict=None, type_id: str="salutationsDevice", dev_id: int=0):  # noqa
         """
         Standard Indigo method called before device config dialog is closed.
 
@@ -1237,6 +1233,13 @@ class Plugin(indigo.PluginBase):
             self.sleep(1)
 
     # =============================================================================
+    def log_plugin_environment(self):
+        """
+        Log pluginEnvironment information when "Display Plugin Information" is selected from the plugin menu.
+        """
+        self.Fogbert.pluginEnvironment()
+
+    # =============================================================================
     def refresh_fields(self, fltr: str="", type_id: str="", target_id: str=0):  # noqa
         """
         Dummy callback to force dynamic control refreshes
@@ -1270,7 +1273,10 @@ class Plugin(indigo.PluginBase):
         The my_tests method is called from a plugin action item and, when called, imports all unit tests and runs them.
         If the unit test module returns True, then all tests have passed.
         """
-        from Tests import test_plugin
+        from Tests import test_plugin, test_devices
         tests = test_plugin.TestPlugin()
         if tests.my_tests(self):
-            self.logger.warning("All tests passed.")
+            self.logger.warning("All plugin tests passed.")
+        tests = test_devices.TestDevices()
+        if tests.my_tests(self):
+            self.logger.warning("All devices tests passed.")
