@@ -1274,9 +1274,19 @@ class Plugin(indigo.PluginBase):
         If the unit test module returns True, then all tests have passed.
         """
         from Tests import test_plugin, test_devices
-        tests = test_plugin.TestPlugin()
-        if tests.my_tests(self):
-            self.logger.warning("All plugin tests passed.")
-        tests = test_devices.TestDevices()
-        if tests.my_tests(self):
-            self.logger.warning("All devices tests passed.")
+        plugin_tests = test_plugin.TestPlugin()
+        device_tests = test_devices.TestDevices()
+
+        def process_test_result(result, name):
+            if result[0] is True:
+                self.logger.warning(f"{name} tests passed.")
+            else:
+                self.logger.warning(f"{result[1]}")
+
+        # ===================================== Plugin tests =====================================
+        test = plugin_tests.my_tests(self)
+        process_test_result(test, "Test Plugin")
+
+        # ===================================== Device Tests =====================================
+        test = device_tests.my_tests(self)
+        process_test_result(test, "Test Devices")
