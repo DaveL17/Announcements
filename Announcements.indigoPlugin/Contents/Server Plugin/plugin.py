@@ -25,7 +25,6 @@ import string
 try:
     import indigo  # noqa
     from dateutil import parser  # noqa
-    import pydevd  # noqa
 except ImportError as error:
     pass
 
@@ -76,12 +75,6 @@ class Plugin(indigo.PluginBase):
 
         # =========================== Initialize DLFramework ===========================
         self.Fogbert = Dave.Fogbert(self)
-
-        # ============================= Remote Debugging ==============================
-        try:
-            pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-        except:
-            pass
 
         self.pluginIsInitializing = False
 
