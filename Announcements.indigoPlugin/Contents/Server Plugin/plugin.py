@@ -1264,7 +1264,8 @@ class Plugin(indigo.PluginBase):
         The main unit test method
 
         The my_tests method is called from a plugin action item and, when called, imports all unit tests and runs them.
-        If the unit test module returns True, then all tests have passed.
+Updat        If the unit test module returns True, then all tests have passed. The `test_xml` tests don't require direct
+        access to the IOM and can be run directly in the IDE.
         """
         from Tests import test_plugin, test_devices
         plugin_tests = test_plugin.TestPlugin()
