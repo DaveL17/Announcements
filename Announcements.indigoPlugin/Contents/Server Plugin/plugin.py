@@ -25,12 +25,12 @@ import string
 try:
     import indigo  # noqa
     from dateutil import parser  # noqa
-except ImportError as error:
+except ImportError:
     pass
 
 # My modules
 import DLFramework.DLFramework as Dave
-from constants import *  # noqa
+from constants import DEBUG_LABELS  # noqa
 from plugin_defaults import kDefaultPluginPrefs  # noqa
 
 # =================================== HEADER ==================================
@@ -39,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2024.1.0'
+__version__   = '2025.1.0'
 
 
 # ==============================================================================
@@ -83,7 +83,7 @@ class Plugin(indigo.PluginBase):
         """
         The destructor for the class.
 
-        We call the super class’s method to ensure that things are destroyed grascefully:
+        We call the super class’s method to ensure that things are destroyed gracefully:
 
         :return:
         """
@@ -220,7 +220,7 @@ class Plugin(indigo.PluginBase):
         # contain Unicode.
         for thing in announcement_list:
             thing_name         = thing[1].replace(' ', '_')
-            announcement_state = (self.getDeviceStateDictForStringType(thing_name, thing_name, thing_name))
+            announcement_state = self.getDeviceStateDictForStringType(thing_name, thing_name, thing_name)
             default_states_list.append(announcement_state)
 
         return default_states_list
@@ -408,7 +408,7 @@ class Plugin(indigo.PluginBase):
         :return indigo.Dict values_dict:
         """
         index = values_dict['announcementList']
-        self.logger.info(f"Announcement to be duplicated: {index}")
+        self.logger.info("Announcement to be duplicated: %s", index)
 
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
@@ -442,7 +442,7 @@ class Plugin(indigo.PluginBase):
         :param int dev_id:
         :return indigo.Dict values_dict:
         """
-        self.logger.debug(f"Editing the {values_dict['announcementName']} announcement")
+        self.logger.debug("Editing the %s announcement", values_dict['announcementName'])
 
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
@@ -520,7 +520,7 @@ class Plugin(indigo.PluginBase):
                 result       = self.substitution_regex(announcement=announcement)
                 dev.updateStateOnServer(announcement_name, value=result)
 
-        self.logger.info(f"Refreshed {announcement_name} announcement.")
+        self.logger.info("Refreshed %s announcement.", announcement_name)
 
     # =============================================================================
     def __announcement_save__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
@@ -602,8 +602,8 @@ class Plugin(indigo.PluginBase):
             temp_dict[index]['Announcement'] = values_dict['announcementText']
             temp_dict[index]['Refresh']      = values_dict['announcementRefresh']
 
-        # User has created a new announcement with a name already in use. We add ' X' to the name
-        # and write a warning to the log.
+        # User has created a new announcement with a name already in use. We add " X" to the name and write a warning
+        # to the log.
         else:
             index            = self.announcement_create_id(temp_dict=temp_dict)
             temp_dict[index] = {
@@ -653,7 +653,7 @@ class Plugin(indigo.PluginBase):
         if len(values_dict['announcementText']) > 0:
             result = self.substitution_regex(announcement=self.substitute(values_dict['announcementText']))
             indigo.server.speak(result, waitUntilDone=False)
-            self.logger.info(f"{result}")
+            self.logger.info("%s", result)
 
         # If the announcement field is blank, and the user has selected an announcement in the list.
         elif values_dict['announcementList'] != "":
@@ -663,11 +663,11 @@ class Plugin(indigo.PluginBase):
             result        = self.substitution_regex(announcement=announcement)
             indigo.server.speak(result, waitUntilDone=False)
 
-            self.logger.info(f"{result}")
+            self.logger.info("%s", result)
 
         # Otherwise, let the user know that there is nothing to speak.
         else:
-            self.logger.error(default_string)
+            self.logger.error("%s", default_string)
             indigo.server.speak(default_string, waitUntilDone=False)
 
         # If enabled in plugin prefs, save copy of the current announcement to variable called
@@ -721,11 +721,11 @@ class Plugin(indigo.PluginBase):
                 indigo.server.speak(announcement, waitUntilDone=False)
 
         except ValueError:
-            self.logger.warning(f"Unable to speak {item_to_speak} value.")
+            self.logger.warning("Unable to speak %s value.", item_to_speak)
             self.logger.debug("Error: ", exc_info=True)
 
         except KeyError:
-            self.logger.warning(f"No announcements to speak for this device {item_to_speak}")
+            self.logger.warning("No announcements to speak for this device %s", item_to_speak)
             self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
@@ -767,11 +767,12 @@ class Plugin(indigo.PluginBase):
 
         # Don't update the device state unless the value has changed.
         if intro_value != dev.states['intro']:
-            self.logger.debug(f"Updating intro to: {intro_value}")
+            self.logger.debug("Updating intro to: %s", intro_value)
+            dev.states['intro'] = dev.states['intro']
             states_list.append({'key': 'intro', 'value': intro_value})
 
         if outro_value != dev.states['outro']:
-            self.logger.debug(f"Updating outro to: {outro_value}")
+            self.logger.debug("Updating outro to: %s", outro_value)
             states_list.append({'key': 'outro', 'value': outro_value})
 
         states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
@@ -818,7 +819,7 @@ class Plugin(indigo.PluginBase):
                     # Set the next refresh time
                     next_update = now + dt.timedelta(minutes=float(announcements[dev.id][key]['Refresh']))
                     announcements[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
-                    self.logger.debug(f"{announcements[dev.id][key]['Name']} updated.")
+                    self.logger.debug("%s updated.", announcements[dev.id][key]['Name'])
                     states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
                     dev.updateStatesOnServer(states_list)
 
@@ -1179,7 +1180,7 @@ class Plugin(indigo.PluginBase):
         except ValueError:
             announcement = self.substitute(values_dict['textfield1'])
             result       = self.substitution_regex(announcement=announcement)
-            self.logger.info(f'Substitution Generator announcement: "{result}"')
+            self.logger.info('Substitution Generator announcement: "%s"', result)
             return values_dict
 
     # =============================================================================
@@ -1259,12 +1260,12 @@ class Plugin(indigo.PluginBase):
         """
         return re.sub(r'(<<.*?), *(((ct)|(dt)|(n)):.*?>>)', self.format_digits, announcement)
 
-    def my_tests(self, action=None):
+    def my_tests(self, action=None):  # noqa
         """
         The main unit test method
 
         The my_tests method is called from a plugin action item and, when called, imports all unit tests and runs them.
-Updat        If the unit test module returns True, then all tests have passed. The `test_xml` tests don't require direct
+        If the unit test module returns True, then all tests have passed. The `test_xml` tests don't require direct
         access to the IOM and can be run directly in the IDE.
         """
         from Tests import test_plugin, test_devices
@@ -1273,9 +1274,9 @@ Updat        If the unit test module returns True, then all tests have passed. T
 
         def process_test_result(result, name):
             if result[0] is True:
-                self.logger.warning(f"{name} tests passed.")
+                self.logger.warning("%s tests passed.", name)
             else:
-                self.logger.warning(f"{result[1]}")
+                self.logger.warning("%s", result[1])
 
         # ===================================== Plugin tests =====================================
         test = plugin_tests.my_tests(self)

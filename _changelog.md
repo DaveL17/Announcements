@@ -1,3 +1,7 @@
+### v2025.1.0
+- Stability and performance improvements
+- Code cleanup
+
 ### v2024.1.0
 - Improves unit testing.
 - Code refinements and enhancements.
