@@ -131,7 +131,7 @@ class Fogbert:
         self.plugin.logger.critical("!" * 80)
 
     # =============================================================================
-Imp    # def convertDebugLevel(self, debug_val: str = "") -> int:  # noqa
+    # def convertDebugLevel(self, debug_val: str = "") -> int:  # noqa
     #     """
     #     The convertDebugLevel method is used to standardize the various implementations of debug level settings across
     #     plugins. Its main purpose is to convert an old string-based setting to account for older plugin versions. Over
