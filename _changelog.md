@@ -1,3 +1,6 @@
+### v2025.2.0
+- Minor changes to standardized plugin functions.
+
 ### v2025.1.0
 - Stability and performance improvements
 - Code cleanup

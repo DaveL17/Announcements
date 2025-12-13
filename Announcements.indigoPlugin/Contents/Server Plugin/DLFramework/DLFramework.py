@@ -131,30 +131,6 @@ class Fogbert:
         self.plugin.logger.critical("!" * 80)
 
     # =============================================================================
-    # def convertDebugLevel(self, debug_val: str = "") -> int:  # noqa
-    #     """
-    #     The convertDebugLevel method is used to standardize the various implementations of debug level settings across
-    #     plugins. Its main purpose is to convert an old string-based setting to account for older plugin versions. Over
-    #     time, this method will become obsolete and should be deprecated.
-    #
-    #     :param str debug_val:
-    #     :return:
-    #     """
-    #     self.plugin.logger.debug("DLFramework convertDebugLevel method called.")
-    #
-    #     # If the debug value is High/Medium/Low, it is the old style. Covert it to 3/2/1
-    #     if debug_val in ["High", "Medium", "Low"]:
-    #         match debug_val:
-    #             case "High":
-    #                 return 3
-    #             case "Medium":
-    #                 return 2
-    #             case _:
-    #                 return 1
-    #     else:
-    #         return 1
-
-    # =============================================================================
     @staticmethod
     def deviceList(dev_filter: str = "") -> list:  # noqa
         """

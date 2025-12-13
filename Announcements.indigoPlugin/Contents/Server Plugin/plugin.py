@@ -39,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.1.0'
+__version__   = '2025.2.0'
 
 
 # ==============================================================================
@@ -125,7 +125,7 @@ class Plugin(indigo.PluginBase):
             # Debug Logging
             self.debug_level = int(values_dict.get('showDebugLevel', 10))
             self.indigo_log_handler.setLevel(self.debug_level)
-            indigo.server.log(f"Debugging on (Level: {DEBUG_LABELS[self.debug_level]} ({self.debug_level})")
+            indigo.server.log(f"Logging level: {DEBUG_LABELS[self.debug_level]} ({self.debug_level})")
 
             # Plugin-specific actions
             self.update_frequency = int(values_dict.get('pluginRefresh', 15))
