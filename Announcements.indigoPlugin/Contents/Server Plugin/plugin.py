@@ -20,6 +20,8 @@ import os
 import re
 import shutil
 import string
+from Tests import test_plugin, test_devices
+
 
 # Third-party modules
 try:
@@ -924,7 +926,7 @@ class Plugin(indigo.PluginBase):
                 self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
-    def format_digits(self, match: re.match) -> re.match:
+    def format_digits(self, match: re.Match) -> str:
         """
         Format announcement digits based on announcement criteria
 
@@ -934,8 +936,8 @@ class Plugin(indigo.PluginBase):
         :param re.match match:
         :return re.match result:
         """
-        match1 = match.group(1)  # the string to be formatted
-        match2 = match.group(2)  # the format specification
+        match1: str = match.group(1)  # the string to be formatted
+        match2: str = match.group(2)  # the format specification
         match1 = match1.replace('<<', '')
         match2 = match2.replace('>>', '')
 
@@ -1248,7 +1250,7 @@ class Plugin(indigo.PluginBase):
         self.logger.debug("refresh_fields()")
 
     # =============================================================================
-    def substitution_regex(self, announcement: str) -> re.match:
+    def substitution_regex(self, announcement: str) -> str:
         """
         Regex method for formatting substitutions.
 
@@ -1268,7 +1270,6 @@ class Plugin(indigo.PluginBase):
         If the unit test module returns True, then all tests have passed. The `test_xml` tests don't require direct
         access to the IOM and can be run directly in the IDE.
         """
-        from Tests import test_plugin, test_devices
         plugin_tests = test_plugin.TestPlugin()
         device_tests = test_devices.TestDevices()
 
