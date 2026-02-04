@@ -41,10 +41,10 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.0'
+__version__   = '2025.2.1'
 
 
-# ==============================================================================
+# =============================================================================
 class Plugin(indigo.PluginBase):
     """
     Standard Indigo Plugin Class
@@ -64,23 +64,23 @@ class Plugin(indigo.PluginBase):
         """
         super().__init__(plugin_id, plugin_display_name, plugin_version, plugin_prefs)
 
-        # ============================ Instance Attributes =============================
+        # ============================ Instance Attributes ============================
         self.announcements_file   = ""
         self.debug_level          = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.pluginIsInitializing = True
         self.pluginIsShuttingDown = False
         self.update_frequency     = int(self.pluginPrefs.get('pluginRefresh', 15))
 
-        # ================================== Logging ===================================
+        # ================================== Logging ==================================
         self.plugin_file_handler.setFormatter(logging.Formatter(fmt=Dave.LOG_FORMAT, datefmt='%Y-%m-%d %H:%M:%S'))
         self.indigo_log_handler.setLevel(self.debug_level)
 
-        # =========================== Initialize DLFramework ===========================
+        # ========================== Initialize DLFramework ===========================
         self.Fogbert = Dave.Fogbert(self)
 
         self.pluginIsInitializing = False
 
-    # ==============================================================================
+    # =============================================================================
     def __del__(self):
         """
         The destructor for the class.
@@ -250,12 +250,12 @@ class Plugin(indigo.PluginBase):
         :return:
         """
 
-        # ============================= Audit Announcements ============================
+        # ============================ Audit Announcements ============================
         path_string             = "/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt"
         self.announcements_file = f"{indigo.server.getInstallFolderPath()}{path_string}"
         self.initialize_announcements_file()
 
-        # ============= Delete Out of Date Announcements ===============
+        # ===================== Delete Out of Date Announcements =====================
         # Open the announcements file and load the contents
         infile = self.__announcement_file_read__()
 
@@ -538,7 +538,7 @@ class Plugin(indigo.PluginBase):
         """
         error_msg_dict = indigo.Dict()
 
-        # ===================== Validation Methods =====================
+        # ============================ Validation Methods =============================
         # Strip leading and trailing whitespace if there is any.
         values_dict['announcementName'] = values_dict['announcementName'].strip()
 
@@ -575,7 +575,7 @@ class Plugin(indigo.PluginBase):
             )
             return values_dict, error_msg_dict
 
-        # =====================================================================
+        # =============================================================================
         # There are no validation errors, so let's continue. Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
 
@@ -1201,7 +1201,7 @@ class Plugin(indigo.PluginBase):
         # return [(hour, f"{hour:02.0f}:00") for hour in range(0, 24)]
         return self.Fogbert.time_list()
 
-    # ==============================================================================
+    # =============================================================================
     def initialize_announcements_file(self):
         """
         Audit the default announcements file.
@@ -1279,10 +1279,10 @@ class Plugin(indigo.PluginBase):
             else:
                 self.logger.warning("%s", result[1])
 
-        # ===================================== Plugin tests =====================================
+        # =============================== Plugin tests ================================
         test = plugin_tests.my_tests(self)
         process_test_result(test, "Test Plugin")
 
-        # ===================================== Device Tests =====================================
+        # =============================== Device Tests ================================
         test = device_tests.my_tests(self)
         process_test_result(test, "Test Devices")
