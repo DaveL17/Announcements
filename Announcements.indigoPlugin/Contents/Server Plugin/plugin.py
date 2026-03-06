@@ -46,21 +46,17 @@ __version__   = '2025.2.1'
 
 # =============================================================================
 class Plugin(indigo.PluginBase):
-    """
-    Standard Indigo Plugin Class
-
-    :param indigo.PluginBase:
-    """
+    """Standard Indigo Plugin Class."""
 
     def __init__(self, plugin_id: str = "", plugin_display_name: str = "", plugin_version: str = "",
                  plugin_prefs: indigo.Dict = None):
-        """
-        Plugin initialization
+        """Plugin initialization.
 
-        :param str plugin_id:
-        :param str plugin_display_name:
-        :param str plugin_version:
-        :param indigo.Dict plugin_prefs:
+        Args:
+            plugin_id (str): The plugin's unique identifier.
+            plugin_display_name (str): The plugin's display name.
+            plugin_version (str): The plugin's version string.
+            plugin_prefs (indigo.Dict): The plugin's stored preferences.
         """
         super().__init__(plugin_id, plugin_display_name, plugin_version, plugin_prefs)
 
@@ -81,28 +77,24 @@ class Plugin(indigo.PluginBase):
         self.pluginIsInitializing = False
 
     # =============================================================================
-    def __del__(self):
-        """
-        The destructor for the class.
+    def __del__(self) -> None:
+        """Destructor for the class.
 
-        We call the super class’s method to ensure that things are destroyed gracefully:
-
-        :return:
+        Calls the superclass method to ensure things are destroyed gracefully.
         """
         indigo.PluginBase.__del__(self)
 
     # =============================================================================
     # ============================== Indigo Methods ===============================
     # =============================================================================
-    def closed_device_config_ui(self, values_dict: indigo.Dict=None, user_cancelled: bool=False, type_id: str= "", dev_id: int=0):  # noqa
-        """
-        Standard Indigo method called when device preferences dialog is closed.
+    def closed_device_config_ui(self, values_dict: indigo.Dict=None, user_cancelled: bool=False, type_id: str= "", dev_id: int=0) -> None:  # noqa
+        """Standard Indigo method called when device preferences dialog is closed.
 
-        :param indigo.Dict values_dict:
-        :param bool user_cancelled:
-        :param str type_id:
-        :param int dev_id:
-        :return:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            user_cancelled (bool): True if the user cancelled the dialog.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
         """
         if not user_cancelled:
             self.announcement_update_states(force=True)
@@ -112,12 +104,14 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def closed_prefs_config_ui(self, values_dict: indigo.Dict=None, user_cancelled: bool=False) -> indigo.Dict:  # noqa
-        """
-        Standard Indigo method called when plugin preferences dialog is closed.
+        """Standard Indigo method called when plugin preferences dialog is closed.
 
-        :param indigo.Dict values_dict:
-        :param bool user_cancelled:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            user_cancelled (bool): True if the user cancelled the dialog.
+
+        Returns:
+            indigo.Dict: The updated values dict.
         """
         if not user_cancelled:
             # Ensure that self.pluginPrefs includes any recent changes.
@@ -143,37 +137,37 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     @staticmethod
-    def device_start_comm(dev: indigo.Device):  # noqa
-        """
-        Standard Indigo method when device comm enabled
+    def device_start_comm(dev: indigo.Device) -> None:  # noqa
+        """Standard Indigo method called when device comm is enabled.
 
-        :param indigo.Device dev:
-        :return:
+        Args:
+            dev (indigo.Device): The Indigo device object.
         """
         dev.stateListOrDisplayStateIdChanged()
         dev.updateStateOnServer('onOffState', value=True, uiValue=" ")
 
     # =============================================================================
     @staticmethod
-    def device_stop_comm(dev: indigo.Device):  # noqa
-        """
-        Standard Indigo method when device comm enabled
+    def device_stop_comm(dev: indigo.Device) -> None:  # noqa
+        """Standard Indigo method called when device comm is disabled.
 
-        :param indigo.Device dev:
-        :return:
+        Args:
+            dev (indigo.Device): The Indigo device object.
         """
         dev.updateStateOnServer('onOffState', value=False, uiValue=" ")
 
     # =============================================================================
     @staticmethod
     def get_device_config_ui_values(values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Standard Indigo method when device config menu opened.
+        """Standard Indigo method called when device config menu is opened.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict.
         """
         # Set the device to disabled while it's being edited.
         indigo.device.enable(dev_id, value=False)
@@ -192,12 +186,14 @@ class Plugin(indigo.PluginBase):
         return values_dict
 
     # =============================================================================
-    def get_device_state_list(self, dev: indigo.Device=None):  # noqa
-        """
-        Standard Indigo method to provide dynamic state list definition information.
+    def get_device_state_list(self, dev: indigo.Device=None) -> list:  # noqa
+        """Standard Indigo method to provide dynamic state list definition information.
 
-        :param indigo.Device dev:
-        :return list dev_state_list:
+        Args:
+            dev (indigo.Device): The Indigo device object.
+
+        Returns:
+            list: The updated device state list.
         """
         local_vars = {}
 
@@ -228,12 +224,8 @@ class Plugin(indigo.PluginBase):
         return default_states_list
 
     # =============================================================================
-    def run_concurrent_thread(self):  # noqa
-        """
-        Standard Indigo Concurrent Thread
-
-        :return:
-        """
+    def run_concurrent_thread(self) -> None:  # noqa
+        """Standard Indigo concurrent thread."""
         try:
             while True:
                 self.update_frequency = int(self.pluginPrefs.get('pluginRefresh', 15))
@@ -243,12 +235,8 @@ class Plugin(indigo.PluginBase):
             pass
 
     # =============================================================================
-    def startup(self):
-        """
-        Standard Indigo Startup Method
-
-        :return:
-        """
+    def startup(self) -> None:
+        """Standard Indigo startup method."""
 
         # ============================ Audit Announcements ============================
         path_string             = "/Preferences/Plugins/com.fogbert.indigoplugin.announcements.txt"
@@ -274,14 +262,16 @@ class Plugin(indigo.PluginBase):
         self.__announcement_file_write__(infile)
 
     # =============================================================================
-    def validate_device_config_ui(self, values_dict: indigo.Dict=None, type_id: str="salutationsDevice", dev_id: int=0):  # noqa
-        """
-        Standard Indigo method called before device config dialog is closed.
+    def validate_device_config_ui(self, values_dict: indigo.Dict=None, type_id: str="salutationsDevice", dev_id: int=0) -> tuple:  # noqa
+        """Standard Indigo method called before device config dialog is closed.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return (bool, indigo.Dict):
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            tuple[bool, indigo.Dict]: Validation result and the values dict.
         """
         error_msg_dict = indigo.Dict()
 
@@ -316,15 +306,17 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     @staticmethod
     def __announcement_clear__(values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Clear announcement data from input field
+        """Clear announcement data from input fields.
 
         Clears whatever is in the Announcement textfield.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict with cleared fields.
         """
         for key in (
                 'announcementIndex',
@@ -342,15 +334,17 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     @staticmethod
     def announcement_create_id(temp_dict: dict=None) -> int:  # noqa
-        """
-        Create a unique ID number for the announcement
+        """Create a unique ID number for the announcement.
 
         In order to properly track the various announcement strings, we must assign each one a unique ID number. We
         check to see if the number has already been assigned to another announcement and, if not, the new ID is
         assigned.
 
-        :param dict temp_dict:
-        :return int:
+        Args:
+            temp_dict (dict): The current announcements dict to check for ID collisions.
+
+        Returns:
+            int: A unique announcement ID.
         """
         local_vars = {}  # noqa
 
@@ -365,15 +359,17 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __announcement_delete__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Delete the highlighted announcement
+        """Delete the highlighted announcement.
 
-        Called when user clicks the Delete Announcement button
+        Called when user clicks the Delete Announcement button.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict.
         """
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
@@ -399,15 +395,17 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __announcement_duplicate__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Create a duplicate of the selected announcement
+        """Create a duplicate of the selected announcement.
 
         Called when user clicks the Duplicate Announcement button.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict.
         """
         index = values_dict['announcementList']
         self.logger.info("Announcement to be duplicated: %s", index)
@@ -434,15 +432,17 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __announcement_edit__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Load the selected announcement for editing
+        """Load the selected announcement for editing.
 
         Called when user clicks the Edit Announcement button.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict with the selected announcement loaded.
         """
         self.logger.debug("Editing the %s announcement", values_dict['announcementName'])
 
@@ -462,10 +462,10 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __announcement_file_read__(self) -> dict:
-        """
-        Load the selected announcement file and return its contents
+        """Load the announcements file and return its contents.
 
-        :return indigo.Dict values_dict:
+        Returns:
+            dict: The announcements data keyed by device ID.
         """
         with open(self.announcements_file, mode='r', encoding="utf-8") as infile:
             d = infile.read()
@@ -486,11 +486,13 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __announcement_file_write__(self, announcements: dict) -> bool:
-        """
-        Write the selected announcement file to disk
+        """Write the announcements dict to disk.
 
-        :param dict announcements:
-        :return bool:
+        Args:
+            announcements (dict): The announcements data to persist.
+
+        Returns:
+            bool: True if the write succeeded.
         """
         # Open the announcements file and write the contents
         with open(self.announcements_file, mode='w', encoding="utf-8") as outfile:
@@ -498,14 +500,13 @@ class Plugin(indigo.PluginBase):
         return True
 
     # =============================================================================
-    def announcement_refresh_action(self, plugin_action: indigo.actionGroup):
-        """
-        Refresh an announcement in response to Indigo Action call
+    def announcement_refresh_action(self, plugin_action: indigo.actionGroup) -> None:
+        """Refresh an announcement in response to an Indigo action call.
 
-        The announcement_refresh_action() method is used to force an announcement to be refreshed by using an Indigo
-        Action Item.
+        Forces an announcement to be refreshed via an Indigo Action Item.
 
-        :param indigo.actionGroup plugin_action:
+        Args:
+            plugin_action (indigo.actionGroup): The Indigo action group object.
         """
         announcement_name = plugin_action.props['announcementToRefresh']
         device_id         = int(plugin_action.props['announcementDeviceToRefresh'])
@@ -526,15 +527,17 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __announcement_save__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Save the current announcement
+        """Save the current announcement.
 
         Called when user clicks the Save Announcement button.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict.
         """
         error_msg_dict = indigo.Dict()
 
@@ -637,16 +640,18 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def announcement_speak(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Speak the selected announcement
+        """Speak the selected announcement.
 
         Called when user clicks the Speak Announcement button. If an announcement is selected in the list, that is the
-        announcement that will be spoken, if there is announcement data in the text fields, that will be what is spoken.
+        announcement that will be spoken; if there is announcement data in the text fields, that will be what is spoken.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int dev_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            dev_id (int): The device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict.
         """
         default_string = "Please select or enter an item to speak."
         result         = ""
@@ -689,27 +694,28 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def announcements_export_action(self, plugin_action: indigo.actionGroup) -> str:  # noqa
-        """
-        Return a copy of the announcements database in JSON format
+        """Return a copy of the announcements database in JSON format.
 
-        The call to announcements_export() is a request to receive a copy of the announcements database in JSON format.
-        It will be provided agnostically; the complete database will be provided.
+        The complete database will be returned agnostically.
 
-        :param indigo.actionGroup plugin_action:
-        :return str:
+        Args:
+            plugin_action (indigo.actionGroup): The Indigo action group object.
+
+        Returns:
+            str: The announcements database serialized as JSON.
         """
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
         return json.dumps(announcements)
 
     # =============================================================================
-    def announcement_speak_action(self, plugin_action: indigo.actionGroup):
-        """
-        Speak an announcement in response to an Indigo action item
+    def announcement_speak_action(self, plugin_action: indigo.actionGroup) -> None:
+        """Speak an announcement in response to an Indigo action item.
 
         Indigo action for speaking any device state or variable value.
 
-        :param indigo.actionGroup plugin_action:
+        Args:
+            plugin_action (indigo.actionGroup): The Indigo action group object.
         """
         item_source   = int(plugin_action.props['announcementDeviceToRefresh'])
         item_to_speak = plugin_action.props['announcementToSpeak']
@@ -731,11 +737,11 @@ class Plugin(indigo.PluginBase):
             self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
-    def __update_salutations_device__(self, dev: indigo.Device):
-        """
-        Updates salutations device
+    def __update_salutations_device__(self, dev: indigo.Device) -> None:
+        """Update the salutations device states based on the current time of day.
 
-        :param indigo.Device dev:
+        Args:
+            dev (indigo.Device): The salutations device to update.
         """
         states_list = []
         now         = dt.datetime.now()
@@ -782,13 +788,15 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def __update_announcements_device__(self, dev: indigo.Device, announcements: dict, force: bool = False) -> dict:
-        """
-        Updates salutations device
+        """Update the announcements device states.
 
-        :param indigo.Device dev:
-        :param dict announcements:
-        :param bool force:
-        :return dict announcements:
+        Args:
+            dev (indigo.Device): The announcements device to update.
+            announcements (dict): The full announcements data dict.
+            force (bool): If True, update regardless of scheduled refresh time.
+
+        Returns:
+            dict: The updated announcements data dict.
         """
         now         = dt.datetime.now()
         states_list = []
@@ -840,16 +848,15 @@ class Plugin(indigo.PluginBase):
             return announcements
 
     # =============================================================================
-    def announcement_update_states(self, force: bool = False):
-        """
-        Update the state values of each announcement
+    def announcement_update_states(self, force: bool = False) -> None:
+        """Update the state values of each announcement.
 
-        Refresh the custom state values of select announcements. The user sets a preference for how often the plugin
-        will cycle, and a per-announcement refresh cycle. For example, the plugin will check every X seconds to see if
-        any announcements require a refresh. The determination is based on the setting for each announcement and the
-        amount of time that has transpired since it was last refreshed.
+        Refreshes the custom state values of select announcements. The plugin checks every X seconds to see if any
+        announcements require a refresh, based on each announcement's individual refresh interval and the time elapsed
+        since it was last refreshed.
 
-        :param: bool force:
+        Args:
+            force (bool): If True, update all announcements regardless of their scheduled refresh time.
         """
         self.logger.debug("Updating announcement states")
 
@@ -872,35 +879,31 @@ class Plugin(indigo.PluginBase):
         self.__announcement_file_write__(announcements)
 
     # =============================================================================
-    def announcement_update_states_now(self):
-        """
-        Force announcements updates based on menu item call
+    def announcement_update_states_now(self) -> None:
+        """Force all announcement updates via menu item call.
 
-        The call to announcement_update_states() includes the attribute `force=True` which causes announcements to be
-        updated regardless of their update time.
-
-        :return:
+        Calls announcement_update_states() with force=True, causing all announcements to be updated regardless of their
+        scheduled refresh time.
         """
         self.announcement_update_states(force=True)
 
     # =============================================================================
     def announcement_update_states_now_action(self, action: indigo.actionGroup=None):  # noqa
-        """
-        Force announcements updates based on menu item call
+        """Force all announcement updates via action item call.
 
-        The call to announcement_update_states() includes the attribute `force=True` which causes announcements to be
-        updated regardless of their update time.
+        Calls announcement_update_states() with force=True, causing all announcements to be updated regardless of their
+        scheduled refresh time.
 
-        :return:
+        Args:
+            action (indigo.actionGroup): The Indigo action group object.
         """
         self.announcement_update_states(force=True)
 
     # =============================================================================
-    def comms_kill_all(self):
-        """
-        Disable communication for all plugin-defined devices
+    def comms_kill_all(self) -> None:
+        """Disable communication for all plugin-defined devices.
 
-        comms_kill_all() sets the enabled status of all plugin devices to false.
+        Sets the enabled status of all plugin devices to False.
         """
         for dev in indigo.devices.itervalues("self"):
             try:
@@ -911,11 +914,10 @@ class Plugin(indigo.PluginBase):
                 self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
-    def comms_unkill_all(self):
-        """
-        Enable communication for all plugin-defined devices
+    def comms_unkill_all(self) -> None:
+        """Enable communication for all plugin-defined devices.
 
-        comms_unkill_all() sets the enabled status of all plugin devices to true.
+        Sets the enabled status of all plugin devices to True.
         """
         for dev in indigo.devices.itervalues("self"):
             try:
@@ -927,14 +929,16 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def format_digits(self, match: re.Match) -> str:
-        """
-        Format announcement digits based on announcement criteria
+        """Format announcement digits based on announcement criteria.
 
-        The format_digits function determines the proper formatting routine to use when converting target values to the
-        specified format. It sends the target value to the proper function for formatting.
+        Determines the proper formatting routine to use when converting target values to the specified format, then
+        delegates to the appropriate formatter.
 
-        :param re.match match:
-        :return re.match result:
+        Args:
+            match (re.Match): The regex match object containing the value and format spec groups.
+
+        Returns:
+            str: The formatted result string.
         """
         match1: str = match.group(1)  # the string to be formatted
         match2: str = match.group(2)  # the format specification
@@ -960,15 +964,16 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def format_current_time(self, match1: str, match2: str) -> str:  # noqa
-        """
-        Format announcement times based on announcement criteria
+        """Format the current time based on announcement criteria.
 
-        The format_current_time function is used to create a formatted version of the current time. It's called when
-        the format specifier is "ct:". It receives two regex match objects.
+        Creates a formatted version of the current time. Called when the format specifier is "ct:".
 
-        :param str match1:
-        :param str match2:
-        :return str result:
+        Args:
+            match1 (str): The original value string (unused for current time).
+            match2 (str): The format specification string (e.g., "ct:%H:%M").
+
+        Returns:
+            str: The formatted current time string.
         """
         match2 = match2.replace('ct:', '')
 
@@ -984,16 +989,17 @@ class Plugin(indigo.PluginBase):
             return f"Unallowable datetime specifiers: {match1} {match2}"
 
     # =============================================================================
-    def format_datetime(self, match1: str, match2: str):  # noqa
-        """
-        Format announcement datetime based on announcement criteria
+    def format_datetime(self, match1: str, match2: str) -> str:  # noqa
+        """Format a datetime string based on announcement criteria.
 
-        The format_datetime function is used to format the string based on common Python datetimeformat specifiers.
-        It's called when the format specifier is "dt:".
+        Formats a string using common Python datetime format specifiers. Called when the format specifier is "dt:".
 
-        :param str match1:
-        :param str match2:
-        :return str result:
+        Args:
+            match1 (str): The datetime value string to parse (or "now" for the current time).
+            match2 (str): The format specification string (e.g., "dt:%A").
+
+        Returns:
+            str: The formatted datetime string.
         """
         match2 = match2.replace('dt:', '')
 
@@ -1013,15 +1019,16 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def format_number(self, match1: str, match2: str) -> str:  # noqa
-        """
-        Format announcement number based on announcement criteria
+        """Format a number based on announcement criteria.
 
-        The format_number function is used to format the string based on common Python numeric format specifiers. It's
-        called when the format specifier is "n:".
+        Formats a string using common Python numeric format specifiers. Called when the format specifier is "n:".
 
-        :param str match1:
-        :param str match2:
-        :return str result:
+        Args:
+            match1 (str): The numeric value string to format.
+            match2 (str): The format specification string (e.g., "n:2" for 2 decimal places).
+
+        Returns:
+            str: The formatted number string.
         """
         match2 = match2.replace('n:', '')
 
@@ -1038,16 +1045,18 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     @staticmethod
     def generator_announcement_list(fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> list:  # noqa
-        """
-        Generate a list of states for Indigo controls
+        """Generate a list of states for Indigo controls.
 
-        Returns a list of states for selected plugin device.
+        Returns a list of states for the selected plugin device.
 
-        :param str fltr:
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return list result:
+        Args:
+            fltr (str): Optional filter string.
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            list: List of (state_id, display_name) tuples.
         """
         try:
             announcement_id = int(values_dict['announcementDeviceToRefresh'])
@@ -1067,58 +1076,55 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def generator_device_list(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> list:  # noqa
-        """
-        Generate a list of plugin-owned devices.
+        """Generate a list of plugin-owned devices.
 
-        Returns a list of plugin devices. Returns a list of tuples in the form: [(ID, "Name"), (ID, "Name")].
+        Returns a list of tuples in the form: [(ID, "Name"), ...].
 
-        :param str fltr:
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return list result:
+        Args:
+            fltr (str): Optional filter string.
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            list: List of (device_id, device_name) tuples.
         """
         return self.Fogbert.deviceList(dev_filter='self')
 
     # =============================================================================
     def generator_dev_var(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> list:  # noqa
-        """
-        Generate a list of Indigo devices and variables.
+        """Generate a list of Indigo devices and variables.
 
-        This method collects IDs and names for all Indigo devices and variables. It creates a list of the form:
-        [(dev.id, dev.name), (var.id, var.name)].
+        Collects IDs and names for all Indigo devices and variables in the form: [(id, name), ...].
 
-        :param str fltr:
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return list result:
+        Args:
+            fltr (str): Optional filter string.
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            list: List of (id, name) tuples for all devices and variables.
         """
         return self.Fogbert.deviceAndVariableList()
 
     # =============================================================================
     def generator_list(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> list:  # noqa
-        """
-        Generate a list of configured announcements
+        """Generate a list of configured announcements.
 
-        Populates the list of announcements based on the device's states. Returns a list based on a dict (infile) of
-        the form:
+        Populates the announcement list based on the device's stored data. The source dict has the form::
 
-        {'announcement ID':
-          {'Announcement': "announcement string",
-           'nextRefresh': "YYYY-MM-DD HH:MM:SS",
-           'Name': "announcement name",
-           'Refresh': "minutes",
-          }
-        }
+            {'announcement ID': {'Announcement': "...", 'nextRefresh': "YYYY-MM-DD HH:MM:SS",
+                                 'Name': "...", 'Refresh': "minutes"}}
 
-        The returned list is of the form: [(announcement ID, announcement name),]
+        Args:
+            fltr (str): Optional filter string.
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
 
-        :param str fltr:
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return list announcements:
+        Returns:
+            list: List of (announcement_id, announcement_name) tuples, sorted by name.
         """
         # Open the announcements file and load the contents
         infile = self.__announcement_file_read__()
@@ -1136,33 +1142,35 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def generator_state_or_value(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> list:  # noqa
-        """
-        Return a list of device states or variable value for selected device
+        """Return a list of device states or variable values for the selected device.
 
-        The generator_state_or_value() method returns a list to populate the relevant device states or variable value
-        to populate a menu control.
+        Populates the relevant device states or variable value for a menu control.
 
-        :param str fltr:
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return list:
+        Args:
+            fltr (str): Optional filter string.
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            list: List of state or value options for the selected device/variable.
         """
         id_number = values_dict.get('devVarMenu', 'None')
         return self.Fogbert.generatorStateOrValue(dev_id=id_number)
 
     # =============================================================================
     def generator_substitutions(self, values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> indigo.Dict:  # noqa
-        """
-        Generate an Indigo substitution string
+        """Generate an Indigo substitution string.
 
-        The generator_substitutions function is used with the Substitution Generator. It is the callback that's used to
-        create the Indigo substitution construct.
+        Callback for the Substitution Generator that creates the Indigo substitution construct.
 
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return indigo.Dict values_dict:
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            indigo.Dict: The updated values dict with the generated substitution string.
         """
         dev_var_id    = values_dict['devVarMenu']
         dev_var_value = values_dict['generator_state_or_value']
@@ -1187,28 +1195,28 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def generator_time(self, fltr: str="", values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> list:  # noqa
-        """
-        Generate a list of hours for plugin control menus
+        """Generate a list of hours for plugin control menus.
 
-        Creates a list of times for use in setting salutation settings of the form:[(0, "00:00"), (1, "01:00"), ...]
+        Creates a list of times for use in salutation settings: [(0, "00:00"), (1, "01:00"), ...].
 
-        :param str fltr:
-        :param indigo.Dict values_dict:
-        :param str type_id:
-        :param int target_id:
-        :return list:
+        Args:
+            fltr (str): Optional filter string.
+            values_dict (indigo.Dict): The dialog's current values.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
+
+        Returns:
+            list: List of (hour_int, "HH:00") tuples for each hour of the day.
         """
         # return [(hour, f"{hour:02.0f}:00") for hour in range(0, 24)]
         return self.Fogbert.time_list()
 
     # =============================================================================
-    def initialize_announcements_file(self):
-        """
-        Audit the default announcements file.
+    def initialize_announcements_file(self) -> None:
+        """Audit the default announcements file.
 
-        Determine whether the announcement file exists and is in the proper location.
-
-        :return:
+        Determines whether the announcement file exists and is in the proper location, migrating it from the old
+        location if necessary, or creating a new empty file if it doesn't exist.
         """
         working_directory = f"{os.path.expanduser('~')}/Announcements Plugin/"
         old_file          = f"{working_directory}announcements.txt"
@@ -1229,46 +1237,45 @@ class Plugin(indigo.PluginBase):
             self.sleep(1)
 
     # =============================================================================
-    def log_plugin_environment(self):
-        """
-        Log pluginEnvironment information when "Display Plugin Information" is selected from the plugin menu.
-        """
+    def log_plugin_environment(self) -> None:
+        """Log plugin environment information when "Display Plugin Information" is selected from the plugin menu."""
         self.Fogbert.pluginEnvironment()
 
     # =============================================================================
     def refresh_fields(self, fltr: str="", type_id: str="", target_id: str=0):  # noqa
-        """
-        Dummy callback to force dynamic control refreshes
+        """Dummy callback to force dynamic control refreshes.
 
-        The refresh_fields() method is a dummy callback used solely to fire other actions that require a callback be
-        run. It performs no other function.
+        Used solely to fire other actions that require a callback. Performs no other function.
 
-        :param str fltr:
-        :param str type_id:
-        :param int target_id:
+        Args:
+            fltr (str): Optional filter string.
+            type_id (str): The device type identifier.
+            target_id (int): The target device ID.
         """
         self.logger.debug("refresh_fields()")
 
     # =============================================================================
     def substitution_regex(self, announcement: str) -> str:
-        """
-        Regex method for formatting substitutions.
+        """Apply regex formatting substitutions to an announcement string.
 
-        This is the main regex used for formatting substitutions. The only possible matches are expressly listed in the
-        pattern. Currently, supported matches are --> ct:, dt:, n:
+        The only possible matches are expressly listed in the pattern. Currently supported specifiers: ct:, dt:, n:.
 
-        :param str announcement: The announcement string to be parsed.
-        :return re.match: (announcement), (format specifier).
+        Args:
+            announcement (str): The announcement string to be parsed.
+
+        Returns:
+            str: The announcement string with all formatting substitutions applied.
         """
         return re.sub(r'(<<.*?), *(((ct)|(dt)|(n)):.*?>>)', self.format_digits, announcement)
 
-    def my_tests(self, action=None):  # noqa
-        """
-        The main unit test method
+    def my_tests(self, action: indigo.actionGroup = None) -> None:  # noqa
+        """Run all plugin unit tests.
 
-        The my_tests method is called from a plugin action item and, when called, imports all unit tests and runs them.
-        If the unit test module returns True, then all tests have passed. The `test_xml` tests don't require direct
+        Called from a plugin action item. Imports and runs all unit tests. The `test_xml` tests don't require direct
         access to the IOM and can be run directly in the IDE.
+
+        Args:
+            action: The Indigo action object (unused).
         """
         plugin_tests = test_plugin.TestPlugin()
         device_tests = test_devices.TestDevices()
