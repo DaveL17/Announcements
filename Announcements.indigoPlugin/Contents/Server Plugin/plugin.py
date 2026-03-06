@@ -492,7 +492,7 @@ class Plugin(indigo.PluginBase):
             announcements (dict): The announcements data to persist.
 
         Returns:
-            bool: True if the write succeeded.
+            bool: True if write succeeded.
         """
         # Open the announcements file and write the contents
         with open(self.announcements_file, mode='w', encoding="utf-8") as outfile:
