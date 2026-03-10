@@ -20,8 +20,6 @@ import os
 import re
 import shutil
 import string
-from Tests import test_plugin, test_devices
-
 
 # Third-party modules
 try:
@@ -1267,29 +1265,3 @@ class Plugin(indigo.PluginBase):
             str: The announcement string with all formatting substitutions applied.
         """
         return re.sub(r'(<<.*?), *(((ct)|(dt)|(n)):.*?>>)', self.format_digits, announcement)
-
-    def my_tests(self, action: indigo.actionGroup = None) -> None:  # noqa
-        """Run all plugin unit tests.
-
-        Called from a plugin action item. Imports and runs all unit tests. The `test_xml` tests don't require direct
-        access to the IOM and can be run directly in the IDE.
-
-        Args:
-            action: The Indigo action object (unused).
-        """
-        plugin_tests = test_plugin.TestPlugin()
-        device_tests = test_devices.TestDevices()
-
-        def process_test_result(result, name):
-            if result[0] is True:
-                self.logger.warning("%s tests passed.", name)
-            else:
-                self.logger.warning("%s", result[1])
-
-        # =============================== Plugin tests ================================
-        test = plugin_tests.my_tests(self)
-        process_test_result(test, "Test Plugin")
-
-        # =============================== Device Tests ================================
-        test = device_tests.my_tests(self)
-        process_test_result(test, "Test Devices")
