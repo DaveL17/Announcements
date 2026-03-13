@@ -1,9 +1,6 @@
-/Announcements.indigoPlugin/Contents/Server Plugin/Tests/
+/tests/
 /Announcements.indigoPlugin/Contents/Server Plugin/requirements.txt
-/Announcements.indigoPlugin/Contents/Server Plugin/.ENV
-/.env
-/Announcements.indigoPlugin/Contents/Server Plugin/indigo_devices_filters.py
-/Announcements.indigoPlugin/Contents/Server Plugin/httpcodes.py
-CLAUDE.md
+/CLAUDE.md
+/.gitignore
 /task.txt
-
+.idea

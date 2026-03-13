@@ -1,3 +1,9 @@
+### v2025.3.0
+- Removes `my_tests` action.
+- Adds unit tests for `format_digits` and `announcement_create_id`.
+- Converts docstrings to Google style.
+- Code cleanup.
+
 ### v2025.2.0
 - Minor changes to standardized plugin functions.
 
