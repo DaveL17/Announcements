@@ -1,8 +1,11 @@
-### v2025.3.0
+### v2025.2.1
 - Removes `my_tests` action.
 - Adds unit tests for `format_digits` and `announcement_create_id`.
 - Converts docstrings to Google style.
 - Code cleanup.
+- Standardized project `.gitignore` file.
+- Removes unused variables from `tests/.env` file.
+- Removes empty plugin directories.
 
 ### v2025.2.0
 - Minor changes to standardized plugin functions.
