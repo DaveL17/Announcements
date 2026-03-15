@@ -1,6 +1,33 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+*.pyc
+
+# PyCharm / JetBrains
+.idea/
+
+# Environment
+.env
+tests/.env
+
+# Claude / Project
+CLAUDE.md
+.gitignore
 /tests/
+
+# Possibly Deprecated
 /Announcements.indigoPlugin/Contents/Server Plugin/requirements.txt
-/CLAUDE.md
-/.gitignore
 /task.txt
-.idea
