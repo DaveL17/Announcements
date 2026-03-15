@@ -47,9 +47,9 @@
 
 ### v2022.0.4
 - Adds foundation for API `3.1`.
- 
+
 ### v2022.0.3
-- Adds `_to_do_list.md` and changes changelog to markdown.
+- Adds `_to_do_list.md` and changes changelog to Markdown.
 - Moves plugin environment logging to plugin menu item (log only on request).
 
 ### v2022.0.2
@@ -177,7 +177,7 @@
 - Fixes pydevd import error.
 
 ### v0.3.3
-- Moves the Refresh Announcements Action item to the devices actions list. (Select Action Group --> Device Actions --> Announcements Controls)
+- Moves the Refresh Announcements Action item to the devices actions list. (Select Action Group → Device Actions → Announcements Controls)
 - Improves time banding for salutation selection.
 - Adds remote debugging.
 
