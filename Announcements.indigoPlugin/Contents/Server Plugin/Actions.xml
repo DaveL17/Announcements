@@ -65,4 +65,25 @@
         </ConfigUI>
     </Action>
 
+    <!--  Hidden Actions for Unit Tests  -->
+    <Action id="refreshAllAnnouncementsForce" uiPath="hidden">
+        <Name>Refresh All Announcements Force</Name>
+        <CallbackMethod>announcement_update_states_now_action</CallbackMethod>
+    </Action>
+
+    <Action id="disableAllPluginDevices" uiPath="hidden">
+        <Name>Disable All Plugin Devices</Name>
+        <CallbackMethod>comms_kill_all</CallbackMethod>
+    </Action>
+
+    <Action id="enableAllPluginDevices" uiPath="hidden">
+        <Name>Enable All Plugin Devices</Name>
+        <CallbackMethod>comms_unkill_all</CallbackMethod>
+    </Action>
+
+    <Action id="displayPluginInformation" uiPath="hidden">
+        <Name>Display Plugin Information</Name>
+        <CallbackMethod>log_plugin_environment</CallbackMethod>
+    </Action>
+
 </Actions>

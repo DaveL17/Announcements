@@ -898,7 +898,7 @@ class Plugin(indigo.PluginBase):
         self.announcement_update_states(force=True)
 
     # =============================================================================
-    def comms_kill_all(self) -> None:
+    def comms_kill_all(self, action: indigo.actionGroup=None) -> None:
         """Disable communication for all plugin-defined devices.
 
         Sets the enabled status of all plugin devices to False.
@@ -912,7 +912,7 @@ class Plugin(indigo.PluginBase):
                 self.logger.debug("Error: ", exc_info=True)
 
     # =============================================================================
-    def comms_unkill_all(self) -> None:
+    def comms_unkill_all(self, action: indigo.actionGroup=None) -> None:
         """Enable communication for all plugin-defined devices.
 
         Sets the enabled status of all plugin devices to True.
@@ -1235,7 +1235,7 @@ class Plugin(indigo.PluginBase):
             self.sleep(1)
 
     # =============================================================================
-    def log_plugin_environment(self) -> None:
+    def log_plugin_environment(self, action: indigo.actionGroup=None) -> None:  # noqa
         """Log plugin environment information when "Display Plugin Information" is selected from the plugin menu."""
         self.Fogbert.pluginEnvironment()
 
