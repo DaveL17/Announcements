@@ -10,6 +10,22 @@ def __init__():
     pass
 
 
+ANNOUNCEMENT_DIALOG_FIELDS = (
+    'announcementIndex',
+    'announcementName',
+    'announcementRefresh',
+    'announcementList',
+    'announcementText',
+)
+
+ANNOUNCEMENT_DIALOG_OPEN_FIELDS = (
+    'announcementName',
+    'announcementList',
+    'announcementRefresh',
+    'announcementText',
+    'subGeneratorResult',
+)
+
 DEBUG_LABELS = {
     10: "Debugging Messages",
     20: "Informational Messages",

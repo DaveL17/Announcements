@@ -30,7 +30,7 @@ except ImportError:
 
 # My modules
 import DLFramework.DLFramework as Dave
-from constants import DEBUG_LABELS  # noqa
+from constants import ANNOUNCEMENT_DIALOG_FIELDS, ANNOUNCEMENT_DIALOG_OPEN_FIELDS, DEBUG_LABELS  # noqa
 from plugin_defaults import kDefaultPluginPrefs  # noqa
 
 # =================================== HEADER ==================================
@@ -39,7 +39,23 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.1'
+__version__   = '2025.2.2'
+
+
+# =============================================================================
+def _validate_format_spec(spec: str, allowlist: str) -> None:
+    """Raise ValueError if any character in spec is not in allowlist.
+
+    Args:
+        spec (str): The format specifier string to validate.
+        allowlist (str): String of allowable characters.
+
+    Raises:
+        ValueError: If spec contains a character not in allowlist.
+    """
+    for char in spec:
+        if char not in allowlist:
+            raise ValueError
 
 
 # =============================================================================
@@ -172,13 +188,7 @@ class Plugin(indigo.PluginBase):
 
         # Ensure that the dialog opens with fresh fields.
         if type_id == 'announcementsDevice':
-            for key in (
-                    'announcementName',
-                    'announcementList',
-                    'announcementRefresh',
-                    'announcementText',
-                    'subGeneratorResult'
-            ):
+            for key in ANNOUNCEMENT_DIALOG_OPEN_FIELDS:
                 values_dict[key] = ''
 
         return values_dict
@@ -196,7 +206,7 @@ class Plugin(indigo.PluginBase):
         local_vars = {}
 
         if dev.deviceTypeId not in self.devicesTypeDict:
-            return None
+            return []
 
         default_states_list = self.devicesTypeDict[dev.deviceTypeId]['States']
 
@@ -303,6 +313,22 @@ class Plugin(indigo.PluginBase):
     # ============================== Plugin Methods ===============================
     # =============================================================================
     @staticmethod
+    def __clear_announcement_fields__(values_dict: indigo.Dict) -> indigo.Dict:
+        """Clear announcement input fields and reset the edit flag.
+
+        Args:
+            values_dict (indigo.Dict): The dialog's current values.
+
+        Returns:
+            indigo.Dict: The updated values dict with cleared fields.
+        """
+        for key in ANNOUNCEMENT_DIALOG_FIELDS:
+            values_dict[key] = ''
+        values_dict['editFlag'] = False
+        return values_dict
+
+    # =============================================================================
+    @staticmethod
     def __announcement_clear__(values_dict: indigo.Dict=None, type_id: str="", target_id: int=0) -> indigo.Dict:  # noqa
         """Clear announcement data from input fields.
 
@@ -316,18 +342,7 @@ class Plugin(indigo.PluginBase):
         Returns:
             indigo.Dict: The updated values dict with cleared fields.
         """
-        for key in (
-                'announcementIndex',
-                'announcementName',
-                'announcementRefresh',
-                'announcementList',
-                'announcementText'
-        ):
-            values_dict[key] = ''
-
-        values_dict['editFlag'] = False
-
-        return values_dict
+        return Plugin.__clear_announcement_fields__(values_dict)
 
     # =============================================================================
     @staticmethod
@@ -378,18 +393,7 @@ class Plugin(indigo.PluginBase):
         # Open the announcements file and save the new dict.
         self.__announcement_file_write__(announcements)
 
-        for key in (
-                'announcementIndex',
-                'announcementName',
-                'announcementRefresh',
-                'announcementList',
-                'announcementText'
-        ):
-            values_dict[key] = ''
-
-        values_dict['editFlag'] = False
-
-        return values_dict
+        return self.__clear_announcement_fields__(values_dict)
 
     # =============================================================================
     def __announcement_duplicate__(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
@@ -517,8 +521,7 @@ class Plugin(indigo.PluginBase):
         announcement_dict = announcements[int(device_id)]
         for key in announcement_dict:
             if announcement_dict[key]['Name'] == announcement_name.replace('_', ' '):
-                announcement = self.substitute(announcements[device_id][key]['Announcement'])
-                result       = self.substitution_regex(announcement=announcement)
+                result = self.__process_announcement__(announcements[device_id][key]['Announcement'])
                 dev.updateStateOnServer(announcement_name, value=result)
 
         self.logger.info("Refreshed %s announcement.", announcement_name)
@@ -624,17 +627,7 @@ class Plugin(indigo.PluginBase):
         self.__announcement_file_write__(announcements)
 
         # Clear the fields.
-        for key in (
-                'announcementIndex',
-                'announcementName',
-                'announcementRefresh',
-                'announcementList',
-                'announcementText'
-        ):
-            values_dict[key] = ''
-        values_dict['editFlag'] = False
-
-        return values_dict
+        return self.__clear_announcement_fields__(values_dict)
 
     # =============================================================================
     def announcement_speak(self, values_dict: indigo.Dict=None, type_id: str="", dev_id: int=0) -> indigo.Dict:  # noqa
@@ -656,7 +649,7 @@ class Plugin(indigo.PluginBase):
 
         # The user has entered a value in the announcement field. Speak that.
         if len(values_dict['announcementText']) > 0:
-            result = self.substitution_regex(announcement=self.substitute(values_dict['announcementText']))
+            result = self.__process_announcement__(values_dict['announcementText'])
             indigo.server.speak(result, waitUntilDone=False)
             self.logger.info("%s", result)
 
@@ -664,8 +657,8 @@ class Plugin(indigo.PluginBase):
         elif values_dict['announcementList'] != "":
             # Open the announcements file and load the contents
             announcements = self.__announcement_file_read__()
-            announcement  = self.substitute(announcements[dev_id][values_dict['announcementList']]['Announcement'])
-            result        = self.substitution_regex(announcement=announcement)
+            announcement_text = announcements[dev_id][values_dict['announcementList']]['Announcement']
+            result            = self.__process_announcement__(announcement_text)
             indigo.server.speak(result, waitUntilDone=False)
 
             self.logger.info("%s", result)
@@ -774,7 +767,6 @@ class Plugin(indigo.PluginBase):
         # Don't update the device state unless the value has changed.
         if intro_value != dev.states['intro']:
             self.logger.debug("Updating intro to: %s", intro_value)
-            dev.states['intro'] = dev.states['intro']
             states_list.append({'key': 'intro', 'value': intro_value})
 
         if outro_value != dev.states['outro']:
@@ -783,6 +775,18 @@ class Plugin(indigo.PluginBase):
 
         states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
         dev.updateStatesOnServer(states_list)
+
+    # =============================================================================
+    def __process_announcement__(self, text: str) -> str:
+        """Substitute variables and apply regex formatting to an announcement string.
+
+        Args:
+            text (str): The raw announcement template string.
+
+        Returns:
+            str: The fully processed announcement string.
+        """
+        return self.substitution_regex(announcement=self.substitute(text))
 
     # =============================================================================
     def __update_announcements_device__(self, dev: indigo.Device, announcements: dict, force: bool = False) -> dict:
@@ -817,26 +821,18 @@ class Plugin(indigo.PluginBase):
                     self.logger.debug("Error: ", exc_info=True)
                     update_time = now - dt.timedelta(minutes=1)
 
-                # If it's time for an announcement to be refreshed.
-                if now >= update_time:
-                    # Update the announcement text.
-                    announcement = self.substitute(announcements[dev.id][key]['Announcement'])
-                    result       = self.substitution_regex(announcement)
-                    states_list.append({'key': state_name, 'value': result})
-
-                    # Set the next refresh time
-                    next_update = now + dt.timedelta(minutes=float(announcements[dev.id][key]['Refresh']))
-                    announcements[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
-                    self.logger.debug("%s updated.", announcements[dev.id][key]['Name'])
-                    states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
-                    dev.updateStatesOnServer(states_list)
-
-                elif force:
-                    # Force an update the announcement text.
-                    announcement = self.substitute(announcements[dev.id][key]['Announcement'])
-                    result       = self.substitution_regex(announcement)
+                # If it's time for an announcement to be refreshed (or a force refresh was requested).
+                if now >= update_time or force:
+                    result = self.__process_announcement__(announcements[dev.id][key]['Announcement'])
                     states_list.append({'key': state_name, 'value': result})
                     states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
+
+                    if now >= update_time:
+                        # Set the next refresh time
+                        next_update = now + dt.timedelta(minutes=float(announcements[dev.id][key]['Refresh']))
+                        announcements[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
+                        self.logger.debug("%s updated.", announcements[dev.id][key]['Name'])
+
                     dev.updateStatesOnServer(states_list)
 
             return announcements
@@ -884,46 +880,50 @@ class Plugin(indigo.PluginBase):
         scheduled refresh time.
         """
         self.announcement_update_states(force=True)
+        self.logger.info("All announcements updated.")
 
     # =============================================================================
     def announcement_update_states_now_action(self, action: indigo.actionGroup=None):  # noqa
         """Force all announcement updates via action item call.
 
-        Calls announcement_update_states() with force=True, causing all announcements to be updated regardless of their
+        Delegates to announcement_update_states_now(), causing all announcements to be updated regardless of their
         scheduled refresh time.
 
         Args:
             action (indigo.actionGroup): The Indigo action group object.
         """
-        self.announcement_update_states(force=True)
+        self.announcement_update_states_now()
 
     # =============================================================================
-    def comms_kill_all(self, action: indigo.actionGroup=None) -> None:
+    def __set_all_device_comms__(self, enabled: bool) -> None:
+        """Enable or disable communication for all plugin-defined devices.
+
+        Args:
+            enabled (bool): True to enable devices, False to disable.
+        """
+        action_label = "unkill" if enabled else "kill"
+        for dev in indigo.devices.itervalues("self"):
+            try:
+                indigo.device.enable(dev, value=enabled)
+            except ValueError:
+                self.logger.critical("Exception when trying to %s all comms.", action_label)
+                self.logger.debug("Error: ", exc_info=True)
+
+    # =============================================================================
+    def comms_kill_all(self, action: indigo.actionGroup = None) -> None:  # noqa
         """Disable communication for all plugin-defined devices.
 
         Sets the enabled status of all plugin devices to False.
         """
-        for dev in indigo.devices.itervalues("self"):
-            try:
-                indigo.device.enable(dev, value=False)
-
-            except ValueError:
-                self.logger.critical("Exception when trying to kill all comms.")
-                self.logger.debug("Error: ", exc_info=True)
+        self.__set_all_device_comms__(enabled=False)
 
     # =============================================================================
-    def comms_unkill_all(self, action: indigo.actionGroup=None) -> None:
+    def comms_unkill_all(self, action: indigo.actionGroup = None) -> None:  # noqa
         """Enable communication for all plugin-defined devices.
 
         Sets the enabled status of all plugin devices to True.
         """
-        for dev in indigo.devices.itervalues("self"):
-            try:
-                indigo.device.enable(dev, value=True)
-
-            except ValueError:
-                self.logger.critical("Exception when trying to unkill all comms.")
-                self.logger.debug("Error: ", exc_info=True)
+        self.__set_all_device_comms__(enabled=True)
 
     # =============================================================================
     def format_digits(self, match: re.Match) -> str:
@@ -976,9 +976,7 @@ class Plugin(indigo.PluginBase):
         match2 = match2.replace('ct:', '')
 
         try:
-            for char in match2:
-                if char not in '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ':  # allowable datetime specifiers
-                    raise ValueError
+            _validate_format_spec(match2, '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ')
             match1 = dt.datetime.now()
             return f"{match1:{match2}}"
 
@@ -1002,9 +1000,7 @@ class Plugin(indigo.PluginBase):
         match2 = match2.replace('dt:', '')
 
         try:
-            for char in match2:
-                if char not in '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ':  # allowable datetime specifiers
-                    raise ValueError
+            _validate_format_spec(match2, '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ')
             if match1 == 'now':
                 match1 = dt.datetime.now()
             else:
@@ -1031,14 +1027,12 @@ class Plugin(indigo.PluginBase):
         match2 = match2.replace('n:', '')
 
         try:
-            for char in match2:
-                if char not in '%+-0123456789eEfFgGn':  # allowable numeric specifiers
-                    raise ValueError
+            _validate_format_spec(match2, '%+-0123456789eEfFgGn')
             return f"{float(match1):0.{int(match2)}f}"
 
         except ValueError:
             self.logger.debug("Error: ", exc_info=True)
-            return f"Unallowable datetime specifiers: {match1} {match2}"
+            return f"Unallowable numeric specifiers: {match1} {match2}"
 
     # =============================================================================
     @staticmethod
@@ -1186,8 +1180,7 @@ class Plugin(indigo.PluginBase):
             return values_dict
 
         except ValueError:
-            announcement = self.substitute(values_dict['textfield1'])
-            result       = self.substitution_regex(announcement=announcement)
+            result = self.__process_announcement__(values_dict['textfield1'])
             self.logger.info('Substitution Generator announcement: "%s"', result)
             return values_dict
 
