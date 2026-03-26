@@ -1233,6 +1233,10 @@ class Plugin(indigo.PluginBase):
         self.Fogbert.pluginEnvironment()
 
     # =============================================================================
+    def report_an_issue(self):
+        self.browser_open("https://google.com")
+
+    # =============================================================================
     def refresh_fields(self, fltr: str="", type_id: str="", target_id: str=0):  # noqa
         """Dummy callback to force dynamic control refreshes.
 

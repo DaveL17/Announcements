@@ -23,4 +23,9 @@
         <CallbackMethod>announcement_update_states_now</CallbackMethod>
     </MenuItem>
 
+    <MenuItem id="report_an_issue">
+        <Name>Report an Issue</Name>
+        <CallbackMethod>report_an_issue</CallbackMethod>
+    </MenuItem>
+
 </MenuItems>
