@@ -13,6 +13,9 @@ from unittest.mock import MagicMock
 import dotenv
 import os
 dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
+PLUGIN_ID     = os.getenv("PLUGIN_ID")
+DEVICE_FOLDER = int(os.getenv("DEVICE_FOLDER", 0))
 import tests.shared.classes  # noqa
 
 
@@ -278,3 +281,127 @@ class TestFormatDigits(APIBase):
             "<<somevalue, xx:something>>",
         )
         self.assertEqual(result, "somevalue xx:something")
+
+
+# ===================================== Devices =====================================
+class TestDevices(APIBase):
+    """Tests for plugin devices defined in Devices.xml."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Skip APIBase setup; tests use module-level env vars."""
+        pass
+
+    @staticmethod
+    def payload(name: str = "", device_type_id: str = "", props: dict = None) -> str:
+        """Generate a host script payload for creating a plugin device.
+
+        Args:
+            name (str): The quoted device name string passed to the host script.
+            device_type_id (str): The Indigo device type ID from Devices.xml.
+            props (dict): The device props dict passed to the host script.
+
+        Returns:
+            str: The host script string.
+        """
+        return textwrap.dedent(f"""\
+            try:
+                import time
+                indigo.device.create(protocol=indigo.kProtocol.Plugin,
+                    name={name},
+                    description='Announcements plugin unit test device',
+                    pluginId='{PLUGIN_ID}',
+                    deviceTypeId='{device_type_id}',
+                    props={props},
+                    folder={DEVICE_FOLDER}
+                )
+                time.sleep(1)
+                return True
+            except:
+                return False
+        """)
+
+    @staticmethod
+    def confirm_creation(name: str = "") -> str:
+        """Generate a host script that confirms a device was created.
+
+        Args:
+            name (str): The quoted device name string to look up.
+
+        Returns:
+            str: The host script string.
+        """
+        return textwrap.dedent(f"""\
+            if {name} in [dev.name for dev in indigo.devices.iter('{PLUGIN_ID}')]:
+                return True
+            else:
+                return False
+        """)
+
+    @staticmethod
+    def delete_device(name: str = "") -> str:
+        """Generate a host script that deletes a plugin device.
+
+        Args:
+            name (str): The quoted device name string to delete.
+
+        Returns:
+            str: The host script string.
+        """
+        return textwrap.dedent(f"""\
+            try:
+                indigo.device.delete({name})
+                return True
+            except:
+                return False
+        """)
+
+    def create_and_delete_device(self, name: str, device_type_id: str, props: dict) -> None:
+        """Create a plugin device, confirm it exists, then delete it.
+
+        Args:
+            name (str): The quoted device name string passed to the host script.
+            device_type_id (str): The Indigo device type ID from Devices.xml.
+            props (dict): The device props dict passed to the host script.
+        """
+        host_script = self.payload(name, device_type_id, props)
+        run_host_script(host_script)
+        self.assertTrue(host_script, "Device creation successful.")
+
+        host_script = self.confirm_creation(name)
+        self.assertTrue(host_script, "Could not confirm the device was created.")
+
+        host_script = self.delete_device(name)
+        run_host_script(host_script)
+        self.assertTrue(host_script, "Device deletion failed.")
+
+    # ================================= Announcements Device ==================================
+    def test_announcements_device_creation(self):
+        """Verify that an Announcements device can be created and deleted via the Indigo API."""
+        my_props = {}
+        self.create_and_delete_device(
+            "'ann_unit_test_announcements_device'",
+            'announcementsDevice',
+            my_props
+        )
+
+    # ================================== Salutations Device ===================================
+    def test_salutations_device_creation(self):
+        """Verify that a Salutations device can be created and deleted via the Indigo API."""
+        my_props  = {'morningStart':       '5',
+                     'morningMessageIn':   'Good morning',
+                     'morningMessageOut':  'Have a great morning',
+                     'afternoonStart':     '12',
+                     'afternoonMessageIn':  'Good afternoon',
+                     'afternoonMessageOut': 'Have a great afternoon',
+                     'eveningStart':       '17',
+                     'eveningMessageIn':   'Good evening',
+                     'eveningMessageOut':  'Have a great evening',
+                     'nightStart':         '22',
+                     'nightMessageIn':     'Good night',
+                     'nightMessageOut':    'Have a great night'}
+        self.create_and_delete_device(
+            "'ann_unit_test_salutations_device'",
+            'salutationsDevice',
+            my_props
+        )

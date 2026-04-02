@@ -28,11 +28,3 @@ tests/.env
 # Claude / Project
 CLAUDE.md
 .gitignore
-/tests/.env
-/tests/.DS_Store
-/tests/__pycache__/
-/tests/.pytest_cache/
-
-# Possibly Deprecated
-/Announcements.indigoPlugin/Contents/Server Plugin/requirements.txt
-/task.txt
