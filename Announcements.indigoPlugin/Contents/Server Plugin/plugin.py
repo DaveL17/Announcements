@@ -303,6 +303,16 @@ class Plugin(indigo.PluginBase):
                 for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
                     error_msg_dict[key] = "You must set *all* the time controls to proceed. Otherwise, select cancel."
 
+            message_fields = (
+                'morningMessageIn',   'morningMessageOut',
+                'afternoonMessageIn', 'afternoonMessageOut',
+                'eveningMessageIn',   'eveningMessageOut',
+                'nightMessageIn',     'nightMessageOut',
+            )
+            for field in message_fields:
+                if not values_dict.get(field, '').strip():
+                    error_msg_dict[field] = "Message cannot be empty."
+
         if len(error_msg_dict) > 0:
             return False, values_dict, error_msg_dict
 
@@ -547,8 +557,7 @@ class Plugin(indigo.PluginBase):
         values_dict['announcementName'] = values_dict['announcementName'].strip()
 
         # Announcement Name
-        if values_dict['announcementName'].isspace() \
-                or values_dict['announcementName'] in ('', 'REQUIRED',) \
+        if values_dict['announcementName'] in ('', 'REQUIRED',) \
                 or values_dict['announcementName'][0].isdigit() \
                 or values_dict['announcementName'][0] in set(string.punctuation) \
                 or values_dict['announcementName'][0:3].lower() == 'xml':
@@ -565,12 +574,12 @@ class Plugin(indigo.PluginBase):
 
         # Refresh time
         try:
-            if float(values_dict['announcementRefresh']) <= 0:
+            if int(values_dict['announcementRefresh']) <= 0:
                 values_dict['announcementRefresh']    = 1
-                error_msg_dict['announcementRefresh'] = "The refresh interval must be a number greater than zero."
+                error_msg_dict['announcementRefresh'] = "The refresh interval must be an integer greater than zero."
         except ValueError:
             values_dict['announcementRefresh']    = 1
-            error_msg_dict['announcementRefresh'] = "The refresh interval must be a numeric value greater than zero."
+            error_msg_dict['announcementRefresh'] = "The refresh interval must be an integer greater than zero."
 
         if len(error_msg_dict) > 0:
             error_msg_dict['showAlertText'] = (

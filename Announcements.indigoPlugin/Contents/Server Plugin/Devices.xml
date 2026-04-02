@@ -62,7 +62,7 @@
                 <Label>Announcement</Label>
             </Field>
 
-            <Field id="announcementRefresh" type="textfield" defaultValue="" tooltip="Please enter the number of minutes to refresh the announcement (Integer greater than 0).">
+            <Field id="announcementRefresh" type="textfield" defaultValue="" tooltip="Please enter the number of minutes to refresh the announcement (integer greater than 0).">
                 <Label>Refresh Interval</Label>
             </Field>
 

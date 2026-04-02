@@ -153,6 +153,100 @@ class TestMenuItems(APIBase):
         self.assertEqual(result.status_code, 200, "The menu item call was not successful.")
 
 
+class TestValidateDeviceConfigUi(APIBase):
+    """Unit tests for the validate_device_config_ui method."""
+
+    __test__ = True
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up class-level fixtures by delegating to the base class."""
+        super().setUpClass()
+        cls.mock_self     = MagicMock()
+        cls.mock_self.logger = MagicMock()
+        cls.mock_self.announcement_update_states = MagicMock()
+
+    def _valid_values(self) -> dict:
+        """Return a fully populated valid salutationsDevice values dict."""
+        return {
+            'morningStart':       '5',
+            'morningMessageIn':   'Good morning',
+            'morningMessageOut':  'Have a great morning',
+            'afternoonStart':     '12',
+            'afternoonMessageIn': 'Good afternoon',
+            'afternoonMessageOut': 'Have a great afternoon',
+            'eveningStart':       '17',
+            'eveningMessageIn':   'Good evening',
+            'eveningMessageOut':  'Have a great evening',
+            'nightStart':         '22',
+            'nightMessageIn':     'Good night',
+            'nightMessageOut':    'Have a great night',
+        }
+
+    def test_valid_salutations_passes(self):
+        """Verify that a fully valid salutations config returns True."""
+        result = plugin.Plugin.validate_device_config_ui(
+            self.mock_self, self._valid_values(), 'salutationsDevice', 0
+        )
+        self.assertTrue(result[0])
+
+    def test_announcements_device_always_passes(self):
+        """Verify that announcementsDevice validation always returns True."""
+        result = plugin.Plugin.validate_device_config_ui(
+            self.mock_self, {}, 'announcementsDevice', 0
+        )
+        self.assertTrue(result[0])
+
+    def test_time_order_invalid(self):
+        """Verify that out-of-order start times fail validation."""
+        values = self._valid_values()
+        values['afternoonStart'] = '3'  # less than morningStart=5
+        result = plugin.Plugin.validate_device_config_ui(
+            self.mock_self, values, 'salutationsDevice', 0
+        )
+        self.assertFalse(result[0])
+        for key in ('morningStart', 'afternoonStart', 'eveningStart', 'nightStart'):
+            self.assertIn(key, result[2])
+
+    def test_empty_message_field_fails(self):
+        """Verify that an empty message string fails validation."""
+        values = self._valid_values()
+        values['morningMessageIn'] = ''
+        result = plugin.Plugin.validate_device_config_ui(
+            self.mock_self, values, 'salutationsDevice', 0
+        )
+        self.assertFalse(result[0])
+        self.assertIn('morningMessageIn', result[2])
+
+    def test_whitespace_only_message_field_fails(self):
+        """Verify that a whitespace-only message string fails validation."""
+        values = self._valid_values()
+        values['eveningMessageOut'] = '   '
+        result = plugin.Plugin.validate_device_config_ui(
+            self.mock_self, values, 'salutationsDevice', 0
+        )
+        self.assertFalse(result[0])
+        self.assertIn('eveningMessageOut', result[2])
+
+    def test_all_empty_message_fields_fail(self):
+        """Verify that all eight message fields are checked for emptiness."""
+        message_fields = (
+            'morningMessageIn',   'morningMessageOut',
+            'afternoonMessageIn', 'afternoonMessageOut',
+            'eveningMessageIn',   'eveningMessageOut',
+            'nightMessageIn',     'nightMessageOut',
+        )
+        for field in message_fields:
+            with self.subTest(field=field):
+                values = self._valid_values()
+                values[field] = ''
+                result = plugin.Plugin.validate_device_config_ui(
+                    self.mock_self, values, 'salutationsDevice', 0
+                )
+                self.assertFalse(result[0])
+                self.assertIn(field, result[2])
+
+
 class TestAnnouncementCreateId(APIBase):
     """Unit tests for the announcement_create_id method."""
 
