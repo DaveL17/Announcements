@@ -1,3 +1,18 @@
+### v2025.2.3
+- Fixes bug in `announcement_speak_action` where the variable branch was unreachable.
+- Fixes bug in `__update_announcements_device__` where device states accumulated across announcements, causing redundant server updates.
+- Adds guard against empty selection in `__announcement_delete__`, `__announcement_duplicate__`, and `__announcement_edit__`.
+- Narrows `format_number` format spec allowlist to match actual accepted input.
+- Fixes `validate_device_config_ui` error dict type incompatibility in test environment.
+- Updates `report_an_issue` URL to the GitHub issues page.
+
+### v2025.2.2
+- Validation improvements.
+- Adds device creation tests.
+- Fixes action callbacks missing the `action` parameter.
+- Consolidates duplicative code.
+- Adds `.ruff_cache/` and `.pytest_cache/` to `.gitignore`.
+
 ### v2025.2.1
 - Removes `my_tests` action.
 - Adds unit tests for `format_digits` and `announcement_create_id`.

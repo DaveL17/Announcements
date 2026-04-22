@@ -39,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.2'
+__version__   = '2025.2.3'
 
 
 # =============================================================================
@@ -281,7 +281,7 @@ class Plugin(indigo.PluginBase):
         Returns:
             tuple[bool, indigo.Dict]: Validation result and the values dict.
         """
-        error_msg_dict = indigo.Dict()
+        error_msg_dict = {}
 
         # Announcements device - We do Announcements Device validation elsewhere in the code.
         if type_id == 'announcementsDevice':
@@ -394,6 +394,9 @@ class Plugin(indigo.PluginBase):
         Returns:
             indigo.Dict: The updated values dict.
         """
+        if not values_dict.get('announcementList'):
+            return values_dict
+
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
 
@@ -419,6 +422,9 @@ class Plugin(indigo.PluginBase):
         Returns:
             indigo.Dict: The updated values dict.
         """
+        if not values_dict.get('announcementList'):
+            return values_dict
+
         index = values_dict['announcementList']
         self.logger.info("Announcement to be duplicated: %s", index)
 
@@ -456,6 +462,9 @@ class Plugin(indigo.PluginBase):
         Returns:
             indigo.Dict: The updated values dict with the selected announcement loaded.
         """
+        if not values_dict.get('announcementList'):
+            return values_dict
+
         self.logger.debug("Editing the %s announcement", values_dict['announcementName'])
 
         # Open the announcements file and load the contents
@@ -563,7 +572,7 @@ class Plugin(indigo.PluginBase):
                 or values_dict['announcementName'][0:3].lower() == 'xml':
             values_dict['announcementName']    = 'REQUIRED'
             error_msg_dict['announcementName'] = (
-                "A announcement name is required. It cannot start with a number, a form of punctuation or the letters "
+                "An announcement name is required. It cannot start with a number, a form of punctuation or the letters "
                 "'xml'."
             )
 
@@ -721,7 +730,7 @@ class Plugin(indigo.PluginBase):
         item_to_speak = plugin_action.props['announcementToSpeak']
 
         try:
-            if indigo.devices[item_source] in indigo.devices:
+            if item_source in indigo.devices:
                 announcement = f"{indigo.devices[item_source].states[item_to_speak]}"
                 indigo.server.speak(announcement, waitUntilDone=False)
             else:
@@ -834,7 +843,6 @@ class Plugin(indigo.PluginBase):
                 if now >= update_time or force:
                     result = self.__process_announcement__(announcements[dev.id][key]['Announcement'])
                     states_list.append({'key': state_name, 'value': result})
-                    states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
 
                     if now >= update_time:
                         # Set the next refresh time
@@ -842,7 +850,9 @@ class Plugin(indigo.PluginBase):
                         announcements[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
                         self.logger.debug("%s updated.", announcements[dev.id][key]['Name'])
 
-                    dev.updateStatesOnServer(states_list)
+            if states_list:
+                states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})
+                dev.updateStatesOnServer(states_list)
 
             return announcements
 
@@ -1036,7 +1046,7 @@ class Plugin(indigo.PluginBase):
         match2 = match2.replace('n:', '')
 
         try:
-            _validate_format_spec(match2, '%+-0123456789eEfFgGn')
+            _validate_format_spec(match2, '0123456789')
             return f"{float(match1):0.{int(match2)}f}"
 
         except ValueError:
@@ -1243,7 +1253,7 @@ class Plugin(indigo.PluginBase):
 
     # =============================================================================
     def report_an_issue(self):
-        self.browser_open("https://google.com")
+        self.browser_open("https://github.com/DaveL17/Announcements/issues")
 
     # =============================================================================
     def refresh_fields(self, fltr: str="", type_id: str="", target_id: str=0):  # noqa
