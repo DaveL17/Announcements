@@ -39,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.3'
+__version__   = '2025.2.4'
 
 
 # =============================================================================
@@ -317,7 +317,7 @@ class Plugin(indigo.PluginBase):
             return False, values_dict, error_msg_dict
 
         self.announcement_update_states()
-        return True, values_dict
+        return True, values_dict, {}
 
     # =============================================================================
     # ============================== Plugin Methods ===============================
@@ -400,7 +400,7 @@ class Plugin(indigo.PluginBase):
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
 
-        index = values_dict['announcementList']
+        index = int(values_dict['announcementList'])
         del announcements[dev_id][index]
 
         # Open the announcements file and save the new dict.
@@ -425,7 +425,7 @@ class Plugin(indigo.PluginBase):
         if not values_dict.get('announcementList'):
             return values_dict
 
-        index = values_dict['announcementList']
+        index = int(values_dict['announcementList'])
         self.logger.info("Announcement to be duplicated: %s", index)
 
         # Open the announcements file and load the contents
@@ -472,7 +472,7 @@ class Plugin(indigo.PluginBase):
         temp_dict     = announcements[dev_id]
 
         # Get the selected announcement index and populate the UI elements.
-        index                              = values_dict['announcementList']
+        index                              = int(values_dict['announcementList'])
         values_dict['announcementIndex']   = index
         values_dict['announcementName']    = temp_dict[index]['Name']
         values_dict['announcementRefresh'] = temp_dict[index]['Refresh']
@@ -536,10 +536,11 @@ class Plugin(indigo.PluginBase):
         # Open the announcements file and load the contents
         announcements = self.__announcement_file_read__()
 
-        # Iterate through the keys to find the right announcement to update.
+        # Iterate through the keys to find the right announcement to update. Compare state-name forms
+        # (spaces → underscores) to avoid reversing a lossy transform.
         announcement_dict = announcements[int(device_id)]
         for key in announcement_dict:
-            if announcement_dict[key]['Name'] == announcement_name.replace('_', ' '):
+            if announcement_dict[key]['Name'].replace(' ', '_') == announcement_name:
                 result = self.__process_announcement__(announcements[device_id][key]['Announcement'])
                 dev.updateStateOnServer(announcement_name, value=result)
 
@@ -621,17 +622,19 @@ class Plugin(indigo.PluginBase):
 
         # If key exists, save to dict.
         elif values_dict['editFlag']:
-            index                            = values_dict['announcementIndex']
+            index                            = int(values_dict['announcementIndex'])
             temp_dict[index]['Name']         = values_dict['announcementName']
             temp_dict[index]['Announcement'] = values_dict['announcementText']
             temp_dict[index]['Refresh']      = values_dict['announcementRefresh']
 
-        # User has created a new announcement with a name already in use. We add " X" to the name and write a warning
-        # to the log.
+        # User has created a new announcement with a name already in use. Append " X" until unique.
         else:
+            unique_name = f"{values_dict['announcementName']} X"
+            while unique_name in announcement_name_list:
+                unique_name += " X"
             index            = self.announcement_create_id(temp_dict=temp_dict)
             temp_dict[index] = {
-                'Name': f"{values_dict['announcementName']} X",
+                'Name': unique_name,
                 'Announcement': values_dict['announcementText'],
                 'Refresh': values_dict['announcementRefresh'],
                 'nextRefresh': f"{dt.datetime.now()}"
@@ -675,7 +678,7 @@ class Plugin(indigo.PluginBase):
         elif values_dict['announcementList'] != "":
             # Open the announcements file and load the contents
             announcements = self.__announcement_file_read__()
-            announcement_text = announcements[dev_id][values_dict['announcementList']]['Announcement']
+            announcement_text = announcements[dev_id][int(values_dict['announcementList'])]['Announcement']
             result            = self.__process_announcement__(announcement_text)
             indigo.server.speak(result, waitUntilDone=False)
 
@@ -779,6 +782,7 @@ class Plugin(indigo.PluginBase):
             outro_value = dev.pluginProps.get('eveningMessageOut', 'Have a great evening.')
 
         else:
+            # Covers now >= night AND now < morning (i.e., midnight through morningStart).
             intro_value = dev.pluginProps.get('nightMessageIn', 'Good night.')
             outro_value = dev.pluginProps.get('nightMessageOut', 'Have a great night.')
 
@@ -844,11 +848,10 @@ class Plugin(indigo.PluginBase):
                     result = self.__process_announcement__(announcements[dev.id][key]['Announcement'])
                     states_list.append({'key': state_name, 'value': result})
 
-                    if now >= update_time:
-                        # Set the next refresh time
-                        next_update = now + dt.timedelta(minutes=float(announcements[dev.id][key]['Refresh']))
-                        announcements[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
-                        self.logger.debug("%s updated.", announcements[dev.id][key]['Name'])
+                    # Always advance nextRefresh so a forced update doesn't re-fire every cycle.
+                    next_update = now + dt.timedelta(minutes=float(announcements[dev.id][key]['Refresh']))
+                    announcements[dev.id][key]['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
+                    self.logger.debug("%s updated.", announcements[dev.id][key]['Name'])
 
             if states_list:
                 states_list.append({'key': 'onOffState', 'value': True, 'uiValue': " "})

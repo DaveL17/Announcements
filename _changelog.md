@@ -1,3 +1,10 @@
+### v2025.2.4
+- Fixes `nextRefresh` not being advanced when a force refresh runs before the scheduled time.
+- Fixes key type mismatch (string vs int) when looking up announcements by ID from UI controls.
+- Fixes duplicate announcement name deduplication to loop until the generated name is unique.
+- Fixes `announcement_refresh_action` name lookup using a lossy underscore-to-space reverse transform.
+- Fixes `validate_device_config_ui` returning an inconsistent 2-tuple on success vs 3-tuple on error.
+
 ### v2025.2.3
 - Fixes bug in `announcement_speak_action` where the variable branch was unreachable.
 - Fixes bug in `__update_announcements_device__` where device states accumulated across announcements, causing redundant server updates.
