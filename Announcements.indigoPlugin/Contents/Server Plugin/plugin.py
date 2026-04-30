@@ -39,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.4'
+__version__   = '2025.2.5'
 
 
 # =============================================================================
@@ -133,7 +133,7 @@ class Plugin(indigo.PluginBase):
                 self.pluginPrefs[k] = values_dict[k]
 
             # Debug Logging
-            self.debug_level = int(values_dict.get('showDebugLevel', 10))
+            self.debug_level = int(values_dict.get('showDebugLevel', 30))
             self.indigo_log_handler.setLevel(self.debug_level)
             indigo.server.log(f"Logging level: {DEBUG_LABELS[self.debug_level]} ({self.debug_level})")
 
@@ -833,7 +833,6 @@ class Plugin(indigo.PluginBase):
 
             for key in announcements[dev.id]:
                 state_name = announcements[dev.id][key]['Name'].replace(' ', '_')
-                state_name = f"{state_name}"
                 try:
                     refresh_time = announcements[dev.id][key].get('nextRefresh', '1970-01-01 00:00:00')
                     update_time  = parser.parse(refresh_time)
@@ -1255,11 +1254,12 @@ class Plugin(indigo.PluginBase):
         self.Fogbert.pluginEnvironment()
 
     # =============================================================================
-    def report_an_issue(self):
+    def report_an_issue(self) -> None:
+        """Open the GitHub issues page in the default browser."""
         self.browser_open("https://github.com/DaveL17/Announcements/issues")
 
     # =============================================================================
-    def refresh_fields(self, fltr: str="", type_id: str="", target_id: str=0):  # noqa
+    def refresh_fields(self, fltr: str="", type_id: str="", target_id: int=0):  # noqa
         """Dummy callback to force dynamic control refreshes.
 
         Used solely to fire other actions that require a callback. Performs no other function.

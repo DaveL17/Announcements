@@ -1,3 +1,9 @@
+### v2025.2.5
+- Fixes inconsistent default value for `showDebugLevel` in `closed_prefs_config_ui` (was `10`, now matches 
+  `__init__` default of `30`).
+- Fixes incorrect type annotation for `target_id` parameter in `refresh_fields` (`str` → `int`).
+- Removes no-op f-string reassignment in `__update_announcements_device__`.
+
 ### v2025.2.4
 - Fixes `nextRefresh` not being advanced when a force refresh runs before the scheduled time.
 - Fixes key type mismatch (string vs int) when looking up announcements by ID from UI controls.
@@ -7,8 +13,10 @@
 
 ### v2025.2.3
 - Fixes bug in `announcement_speak_action` where the variable branch was unreachable.
-- Fixes bug in `__update_announcements_device__` where device states accumulated across announcements, causing redundant server updates.
-- Adds guard against empty selection in `__announcement_delete__`, `__announcement_duplicate__`, and `__announcement_edit__`.
+- Fixes bug in `__update_announcements_device__` where device states accumulated across announcements, causing 
+  redundant server updates.
+- Adds guard against empty selection in `__announcement_delete__`, `__announcement_duplicate__`, and 
+  `__announcement_edit__`.
 - Narrows `format_number` format spec allowlist to match actual accepted input.
 - Fixes `validate_device_config_ui` error dict type incompatibility in test environment.
 - Updates `report_an_issue` URL to the GitHub issues page.
