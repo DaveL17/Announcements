@@ -39,7 +39,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.5'
+__version__   = '2025.2.6'
 
 
 # =============================================================================
@@ -281,7 +281,7 @@ class Plugin(indigo.PluginBase):
         Returns:
             tuple[bool, indigo.Dict]: Validation result and the values dict.
         """
-        error_msg_dict = {}
+        error_msg_dict = indigo.Dict()
 
         # Announcements device - We do Announcements Device validation elsewhere in the code.
         if type_id == 'announcementsDevice':
@@ -317,7 +317,7 @@ class Plugin(indigo.PluginBase):
             return False, values_dict, error_msg_dict
 
         self.announcement_update_states()
-        return True, values_dict, {}
+        return (True, values_dict)
 
     # =============================================================================
     # ============================== Plugin Methods ===============================

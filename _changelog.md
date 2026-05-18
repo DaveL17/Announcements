@@ -1,4 +1,10 @@
-### v2025.2.5
+### v2025.2.6
+- Fixes `validate_device_config_ui` for salutations devices returning a 3-tuple `(True, values_dict, {})` on
+  success — Indigo requires a 2-tuple on success, causing a `CXmlDict` conversion error when saving a new device.
+- Fixes `error_msg_dict` initialized as a plain `dict` instead of `indigo.Dict`, causing the same `CXmlDict`
+  conversion error when validation fails (e.g., time periods out of order).
+
+### v2025.2.5 [released]
 - Fixes inconsistent default value for `showDebugLevel` in `closed_prefs_config_ui` (was `10`, now matches 
   `__init__` default of `30`).
 - Fixes incorrect type annotation for `target_id` parameter in `refresh_fields` (`str` → `int`).
@@ -40,7 +46,7 @@
 ### v2025.2.0
 - Minor changes to standardized plugin functions.
 
-### v2025.1.0
+### v2025.1.0 [released]
 - Stability and performance improvements
 - Code cleanup
 
