@@ -1,3 +1,8 @@
+### v2025.2.7
+- Expands unit test coverage: adds `TestFormatSpec`, `TestAnnouncementFileIO`, `TestAnnouncementCRUD`, and
+  `TestGeneratorList` test classes; adds edge-case tests for non-numeric and malformed datetime values in
+  `TestFormatDigits`; patches `indigo.Dict` in `TestValidateDeviceConfigUi` for reliable out-of-host testing.
+
 ### v2025.2.6 [released]
 - Fixes `validate_device_config_ui` for salutations devices returning a 3-tuple `(True, values_dict, {})` on
   success — Indigo requires a 2-tuple on success, causing a `CXmlDict` conversion error when saving a new device.

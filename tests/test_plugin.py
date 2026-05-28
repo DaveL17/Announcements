@@ -4,12 +4,14 @@ Unit tests for the Announcements plugin.
 
 from tests.shared import APIBase
 from tests.shared.utils import run_host_script
+from tests import helpers
 import datetime as dt
 import httpx
+import json
 import re
 import sys
 import textwrap
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import dotenv
 import os
 dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
@@ -165,6 +167,16 @@ class TestValidateDeviceConfigUi(APIBase):
         cls.mock_self     = MagicMock()
         cls.mock_self.logger = MagicMock()
         cls.mock_self.announcement_update_states = MagicMock()
+
+    def setUp(self):
+        # indigo.Dict() must return a trackable dict so that len(error_msg_dict) > 0
+        # works correctly both inside and outside the Indigo host process.
+        self._dict_patcher = patch.object(sys.modules['indigo'], 'Dict', dict)
+        self._dict_patcher.start()
+
+    def tearDown(self):
+        self._dict_patcher.stop()
+        super().tearDown()
 
     def _valid_values(self) -> dict:
         """Return a fully populated valid salutationsDevice values dict."""
@@ -376,126 +388,323 @@ class TestFormatDigits(APIBase):
         )
         self.assertEqual(result, "somevalue xx:something")
 
+    def test_format_digits_number_non_numeric_value(self):
+        """Verify that a valid specifier but non-numeric value returns the error string."""
+        result = self._format_digits("<<abc, n:2>>")
+        self.assertIn("Unallowable", result)
 
-# ===================================== Devices =====================================
-class TestDevices(APIBase):
-    """Tests for plugin devices defined in Devices.xml."""
+    def test_format_digits_datetime_malformed_value(self):
+        """Verify that a valid specifier but unparseable datetime value returns the error string."""
+        result = self._format_digits("<<not-a-real-date, dt:%Y>>")
+        self.assertIn("Unallowable", result)
+
+
+class TestFormatSpec(APIBase):
+    """Unit tests for the module-level _validate_format_spec function."""
+
+    __test__ = True
 
     @classmethod
     def setUpClass(cls):
-        """Skip APIBase setup; tests use module-level env vars."""
-        pass
+        """Set up class-level fixtures by delegating to the base class."""
+        super().setUpClass()
 
-    @staticmethod
-    def payload(name: str = "", device_type_id: str = "", props: dict = None) -> str:
-        """Generate a host script payload for creating a plugin device.
+    def test_valid_datetime_spec_does_not_raise(self):
+        """Valid datetime characters should not raise ValueError."""
+        try:
+            plugin._validate_format_spec('%H:%M', '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ')
+        except ValueError:
+            self.fail("_validate_format_spec raised ValueError for a valid datetime spec")
 
-        Args:
-            name (str): The quoted device name string passed to the host script.
-            device_type_id (str): The Indigo device type ID from Devices.xml.
-            props (dict): The device props dict passed to the host script.
+    def test_invalid_datetime_spec_raises(self):
+        """A character not in the datetime allowlist should raise ValueError."""
+        with self.assertRaises(ValueError):
+            plugin._validate_format_spec('!invalid', '.,%:-aAwdbBmyYHIpMSfzZjUWcxX ')
 
-        Returns:
-            str: The host script string.
-        """
-        return textwrap.dedent(f"""\
-            try:
-                import time
-                indigo.device.create(protocol=indigo.kProtocol.Plugin,
-                    name={name},
-                    description='Announcements plugin unit test device',
-                    pluginId='{PLUGIN_ID}',
-                    deviceTypeId='{device_type_id}',
-                    props={props},
-                    folder={DEVICE_FOLDER}
-                )
-                time.sleep(1)
-                return True
-            except:
-                return False
-        """)
+    def test_valid_number_spec_does_not_raise(self):
+        """Valid digit characters should not raise ValueError."""
+        try:
+            plugin._validate_format_spec('2', '0123456789')
+        except ValueError:
+            self.fail("_validate_format_spec raised ValueError for a valid number spec")
 
-    @staticmethod
-    def confirm_creation(name: str = "") -> str:
-        """Generate a host script that confirms a device was created.
+    def test_invalid_number_spec_raises(self):
+        """A non-digit character in a number spec should raise ValueError."""
+        with self.assertRaises(ValueError):
+            plugin._validate_format_spec('z', '0123456789')
 
-        Args:
-            name (str): The quoted device name string to look up.
+    def test_empty_spec_does_not_raise(self):
+        """An empty spec string should not raise ValueError (nothing to validate)."""
+        try:
+            plugin._validate_format_spec('', '0123456789')
+        except ValueError:
+            self.fail("_validate_format_spec raised ValueError for an empty spec")
 
-        Returns:
-            str: The host script string.
-        """
-        return textwrap.dedent(f"""\
-            if {name} in [dev.name for dev in indigo.devices.iter('{PLUGIN_ID}')]:
-                return True
-            else:
-                return False
-        """)
 
-    @staticmethod
-    def delete_device(name: str = "") -> str:
-        """Generate a host script that deletes a plugin device.
+class TestAnnouncementFileIO(APIBase):
+    """Unit tests for __announcement_file_read__ and __announcement_file_write__."""
 
-        Args:
-            name (str): The quoted device name string to delete.
+    __test__ = True
 
-        Returns:
-            str: The host script string.
-        """
-        return textwrap.dedent(f"""\
-            try:
-                indigo.device.delete({name})
-                return True
-            except:
-                return False
-        """)
+    DEV_ID = 12345
 
-    def create_and_delete_device(self, name: str, device_type_id: str, props: dict) -> None:
-        """Create a plugin device, confirm it exists, then delete it.
+    @classmethod
+    def setUpClass(cls):
+        """Set up class-level fixtures by delegating to the base class."""
+        super().setUpClass()
 
-        Args:
-            name (str): The quoted device name string passed to the host script.
-            device_type_id (str): The Indigo device type ID from Devices.xml.
-            props (dict): The device props dict passed to the host script.
-        """
-        host_script = self.payload(name, device_type_id, props)
-        run_host_script(host_script)
-        self.assertTrue(host_script, "Device creation successful.")
+    def setUp(self):
+        self.mock_self = MagicMock()
+        self.mock_self.logger = MagicMock()
+        self._tmp, self.mock_self.announcements_file = helpers.make_announcements_file()
 
-        host_script = self.confirm_creation(name)
-        self.assertTrue(host_script, "Could not confirm the device was created.")
+    def tearDown(self):
+        self._tmp.cleanup()
 
-        host_script = self.delete_device(name)
-        run_host_script(host_script)
-        self.assertTrue(host_script, "Device deletion failed.")
+    def test_write_returns_true(self):
+        """__announcement_file_write__ should return True on success."""
+        result = plugin.Plugin.__announcement_file_write__(self.mock_self, {})
+        self.assertTrue(result)
 
-    # ================================= Announcements Device ==================================
-    def test_announcements_device_creation(self):
-        """Verify that an Announcements device can be created and deleted via the Indigo API."""
-        my_props = {}
-        self.create_and_delete_device(
-            "'ann_unit_test_announcements_device'",
-            'announcementsDevice',
-            my_props
+    def test_round_trip_preserves_content(self):
+        """Write then read should return equivalent data."""
+        original = {99: {"1": {"Name": "Hello", "Announcement": "World", "Refresh": "5", "nextRefresh": "..."}}}
+        plugin.Plugin.__announcement_file_write__(self.mock_self, original)
+        result = plugin.Plugin.__announcement_file_read__(self.mock_self)
+        self.assertIn(99, result)
+        self.assertEqual(result[99]["1"]["Name"], "Hello")
+
+    def test_read_converts_outer_keys_to_int(self):
+        """Device ID keys (outer level) should be ints after reading from JSON."""
+        data = {12345: {"1": {"Name": "Test", "Announcement": "Hi", "Refresh": "15", "nextRefresh": "..."}}}
+        plugin.Plugin.__announcement_file_write__(self.mock_self, data)
+        result = plugin.Plugin.__announcement_file_read__(self.mock_self)
+        self.assertIn(12345, result)
+        self.assertNotIn("12345", result)
+
+    def test_read_inner_keys_remain_strings(self):
+        """Announcement ID keys (inner level) remain strings after JSON round-trip."""
+        data = {12345: {"1": {"Name": "Test", "Announcement": "Hi", "Refresh": "15", "nextRefresh": "..."}}}
+        plugin.Plugin.__announcement_file_write__(self.mock_self, data)
+        result = plugin.Plugin.__announcement_file_read__(self.mock_self)
+        self.assertIn("1", result[12345])
+
+    def test_read_missing_file_raises(self):
+        """__announcement_file_read__ raises FileNotFoundError when the file is absent."""
+        self.mock_self.announcements_file = "/nonexistent/path/announcements.json"
+        with self.assertRaises(FileNotFoundError):
+            plugin.Plugin.__announcement_file_read__(self.mock_self)
+
+    def test_read_python_literal_fallback(self):
+        """A Python-literal file (pre-JSON migration) should be parsed via ast.literal_eval."""
+        with open(self.mock_self.announcements_file, 'w', encoding='utf-8') as f:
+            f.write("{12345: {'1': {'Name': 'Legacy', 'Announcement': 'Old', 'Refresh': '10', 'nextRefresh': '...'}}}")
+        result = plugin.Plugin.__announcement_file_read__(self.mock_self)
+        self.assertIn(12345, result)
+        self.assertEqual(result[12345]['1']['Name'], 'Legacy')
+
+
+class TestAnnouncementCRUD(APIBase):
+    """Unit tests for announcement create/read/update/delete methods."""
+
+    __test__ = True
+
+    DEV_ID = 12345
+    ANN_ID = 111
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up class-level fixtures by delegating to the base class."""
+        super().setUpClass()
+
+    def setUp(self):
+        self.mock_self = MagicMock()
+        self.mock_self.logger = MagicMock()
+        # MagicMock raises AttributeError for dunder names; inject the static method directly.
+        self.mock_self.__dict__['__clear_announcement_fields__'] = (
+            plugin.Plugin.__clear_announcement_fields__
         )
 
-    # ================================== Salutations Device ===================================
-    def test_salutations_device_creation(self):
-        """Verify that a Salutations device can be created and deleted via the Indigo API."""
-        my_props  = {'morningStart':       '5',
-                     'morningMessageIn':   'Good morning',
-                     'morningMessageOut':  'Have a great morning',
-                     'afternoonStart':     '12',
-                     'afternoonMessageIn':  'Good afternoon',
-                     'afternoonMessageOut': 'Have a great afternoon',
-                     'eveningStart':       '17',
-                     'eveningMessageIn':   'Good evening',
-                     'eveningMessageOut':  'Have a great evening',
-                     'nightStart':         '22',
-                     'nightMessageIn':     'Good night',
-                     'nightMessageOut':    'Have a great night'}
-        self.create_and_delete_device(
-            "'ann_unit_test_salutations_device'",
-            'salutationsDevice',
-            my_props
-        )
+    def _make_data(self) -> dict:
+        return {
+            self.DEV_ID: {
+                self.ANN_ID: {
+                    "Name": "My Announcement",
+                    "Announcement": "Hello world",
+                    "Refresh": "15",
+                    "nextRefresh": "2025-01-01 00:00:00",
+                }
+            }
+        }
+
+    def test_delete_removes_announcement(self):
+        """__announcement_delete__ should remove the selected announcement from the file."""
+        data = self._make_data()
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value=data)
+        self.mock_self.__announcement_file_write__ = MagicMock(return_value=True)
+        values_dict = {'announcementList': str(self.ANN_ID)}
+        plugin.Plugin.__announcement_delete__(self.mock_self, values_dict, '', self.DEV_ID)
+        written = self.mock_self.__announcement_file_write__.call_args[0][0]
+        self.assertNotIn(self.ANN_ID, written.get(self.DEV_ID, {}))
+
+    def test_delete_no_op_when_list_empty(self):
+        """__announcement_delete__ should return unchanged values_dict when nothing is selected."""
+        self.mock_self.__announcement_file_read__ = MagicMock()
+        values_dict = {'announcementList': ''}
+        result = plugin.Plugin.__announcement_delete__(self.mock_self, values_dict, '', self.DEV_ID)
+        self.mock_self.__announcement_file_read__.assert_not_called()
+        self.assertIs(result, values_dict)
+
+    def test_duplicate_creates_copy(self):
+        """__announcement_duplicate__ should write a new entry with ' copy' appended to the name."""
+        data = self._make_data()
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value=data)
+        self.mock_self.__announcement_file_write__ = MagicMock(return_value=True)
+        self.mock_self.announcement_create_id = MagicMock(return_value=999)
+        values_dict = {'announcementList': str(self.ANN_ID)}
+        plugin.Plugin.__announcement_duplicate__(self.mock_self, values_dict, '', self.DEV_ID)
+        written = self.mock_self.__announcement_file_write__.call_args[0][0]
+        self.assertIn(999, written[self.DEV_ID])
+        self.assertIn('copy', written[self.DEV_ID][999]['Name'])
+
+    def test_edit_populates_values_dict(self):
+        """__announcement_edit__ should load the selected announcement into values_dict."""
+        data = self._make_data()
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value=data)
+        values_dict = {
+            'announcementList':    str(self.ANN_ID),
+            'announcementName':    '',
+            'announcementRefresh': '',
+            'announcementText':    '',
+            'announcementIndex':   0,
+            'editFlag':            False,
+        }
+        result = plugin.Plugin.__announcement_edit__(self.mock_self, values_dict, '', self.DEV_ID)
+        self.assertEqual(result['announcementName'],    'My Announcement')
+        self.assertEqual(result['announcementText'],    'Hello world')
+        self.assertEqual(result['announcementRefresh'], '15')
+        self.assertTrue(result['editFlag'])
+
+    def _run_save(self, values_dict: dict) -> tuple:
+        """Call __announcement_save__ with indigo.Dict patched to a real dict.
+
+        indigo.Dict() must return a real dict so that error tracking (len > 0) works
+        correctly in both live-Indigo and mock-only environments.
+        """
+        from unittest.mock import patch
+        with patch.object(sys.modules['indigo'], 'Dict', dict):
+            return plugin.Plugin.__announcement_save__(
+                self.mock_self, values_dict, '', self.DEV_ID
+            )
+
+    def test_save_empty_name_fails(self):
+        """__announcement_save__ should return an error dict when the name is empty."""
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value={self.DEV_ID: {}})
+        values_dict = {
+            'announcementName':    '',
+            'announcementText':    'Some text',
+            'announcementRefresh': '15',
+            'editFlag':            False,
+        }
+        values_out, errors = self._run_save(values_dict)
+        self.assertEqual(values_out['announcementName'], 'REQUIRED')
+        self.assertIn('announcementName', errors)
+
+    def test_save_name_starting_with_digit_fails(self):
+        """__announcement_save__ should reject a name that starts with a digit."""
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value={self.DEV_ID: {}})
+        values_dict = {
+            'announcementName':    '1invalid',
+            'announcementText':    'Some text',
+            'announcementRefresh': '15',
+            'editFlag':            False,
+        }
+        values_out, errors = self._run_save(values_dict)
+        self.assertIn('announcementName', errors)
+
+    def test_save_empty_text_fails(self):
+        """__announcement_save__ should return an error dict when the announcement text is empty."""
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value={self.DEV_ID: {}})
+        values_dict = {
+            'announcementName':    'ValidName',
+            'announcementText':    '',
+            'announcementRefresh': '15',
+            'editFlag':            False,
+        }
+        values_out, errors = self._run_save(values_dict)
+        self.assertIn('announcementText', errors)
+
+    def test_save_zero_refresh_fails(self):
+        """__announcement_save__ should reject a refresh interval of zero."""
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value={self.DEV_ID: {}})
+        values_dict = {
+            'announcementName':    'ValidName',
+            'announcementText':    'Some text',
+            'announcementRefresh': '0',
+            'editFlag':            False,
+        }
+        values_out, errors = self._run_save(values_dict)
+        self.assertIn('announcementRefresh', errors)
+
+    def test_save_non_numeric_refresh_fails(self):
+        """__announcement_save__ should reject a non-numeric refresh interval."""
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value={self.DEV_ID: {}})
+        values_dict = {
+            'announcementName':    'ValidName',
+            'announcementText':    'Some text',
+            'announcementRefresh': 'abc',
+            'editFlag':            False,
+        }
+        values_out, errors = self._run_save(values_dict)
+        self.assertIn('announcementRefresh', errors)
+
+
+
+class TestGeneratorList(APIBase):
+    """Unit tests for the generator_list method."""
+
+    __test__ = True
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up class-level fixtures by delegating to the base class."""
+        super().setUpClass()
+
+    def setUp(self):
+        self.mock_self = MagicMock()
+        self.mock_self.logger = MagicMock()
+
+    def test_returns_sorted_tuples(self):
+        """generator_list should return announcements sorted by name."""
+        data = {
+            100: {
+                1: {'Name': 'Zebra', 'Announcement': 'Z', 'Refresh': '5', 'nextRefresh': '...'},
+                2: {'Name': 'Apple', 'Announcement': 'A', 'Refresh': '5', 'nextRefresh': '...'},
+            }
+        }
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value=data)
+        result = plugin.Plugin.generator_list(self.mock_self, target_id=100)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0][1], 'Apple')
+        self.assertEqual(result[1][1], 'Zebra')
+
+    def test_unknown_device_returns_empty(self):
+        """generator_list should return an empty list when target_id is not in the data."""
+        data = {100: {1: {'Name': 'Test', 'Announcement': 'Hi', 'Refresh': '5', 'nextRefresh': '...'}}}
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value=data)
+        result = plugin.Plugin.generator_list(self.mock_self, target_id=999)
+        self.assertEqual(result, [])
+
+    def test_empty_data_returns_empty(self):
+        """generator_list should return an empty list when the file contains no entries."""
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value={})
+        result = plugin.Plugin.generator_list(self.mock_self, target_id=100)
+        self.assertEqual(result, [])
+
+    def test_single_entry_not_sorted(self):
+        """generator_list with one entry should return a single-element list."""
+        data = {100: {1: {'Name': 'OnlyOne', 'Announcement': 'Hi', 'Refresh': '5', 'nextRefresh': '...'}}}
+        self.mock_self.__announcement_file_read__ = MagicMock(return_value=data)
+        result = plugin.Plugin.generator_list(self.mock_self, target_id=100)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0][1], 'OnlyOne')
