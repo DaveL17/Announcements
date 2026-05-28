@@ -1,4 +1,4 @@
-### v2025.2.6
+### v2025.2.6 [released]
 - Fixes `validate_device_config_ui` for salutations devices returning a 3-tuple `(True, values_dict, {})` on
   success — Indigo requires a 2-tuple on success, causing a `CXmlDict` conversion error when saving a new device.
 - Fixes `error_msg_dict` initialized as a plain `dict` instead of `indigo.Dict`, causing the same `CXmlDict`
