@@ -467,12 +467,12 @@ class TestAnnouncementFileIO(APIBase):
         self.assertTrue(result)
 
     def test_round_trip_preserves_content(self):
-        """Write then read should return equivalent data."""
+        """Write then read should return equivalent data with int keys at both levels."""
         original = {99: {"1": {"Name": "Hello", "Announcement": "World", "Refresh": "5", "nextRefresh": "..."}}}
         plugin.Plugin.__announcement_file_write__(self.mock_self, original)
         result = plugin.Plugin.__announcement_file_read__(self.mock_self)
         self.assertIn(99, result)
-        self.assertEqual(result[99]["1"]["Name"], "Hello")
+        self.assertEqual(result[99][1]["Name"], "Hello")
 
     def test_read_converts_outer_keys_to_int(self):
         """Device ID keys (outer level) should be ints after reading from JSON."""
@@ -482,12 +482,13 @@ class TestAnnouncementFileIO(APIBase):
         self.assertIn(12345, result)
         self.assertNotIn("12345", result)
 
-    def test_read_inner_keys_remain_strings(self):
-        """Announcement ID keys (inner level) remain strings after JSON round-trip."""
+    def test_read_inner_keys_converted_to_int(self):
+        """Announcement ID keys (inner level) should be ints after reading from JSON."""
         data = {12345: {"1": {"Name": "Test", "Announcement": "Hi", "Refresh": "15", "nextRefresh": "..."}}}
         plugin.Plugin.__announcement_file_write__(self.mock_self, data)
         result = plugin.Plugin.__announcement_file_read__(self.mock_self)
-        self.assertIn("1", result[12345])
+        self.assertIn(1, result[12345])
+        self.assertNotIn("1", result[12345])
 
     def test_read_missing_file_raises(self):
         """__announcement_file_read__ raises FileNotFoundError when the file is absent."""
@@ -501,7 +502,7 @@ class TestAnnouncementFileIO(APIBase):
             f.write("{12345: {'1': {'Name': 'Legacy', 'Announcement': 'Old', 'Refresh': '10', 'nextRefresh': '...'}}}")
         result = plugin.Plugin.__announcement_file_read__(self.mock_self)
         self.assertIn(12345, result)
-        self.assertEqual(result[12345]['1']['Name'], 'Legacy')
+        self.assertEqual(result[12345][1]['Name'], 'Legacy')
 
 
 class TestAnnouncementCRUD(APIBase):

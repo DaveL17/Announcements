@@ -1,7 +1,14 @@
+### v2025.2.8
+- Fixes inability to edit, create, or save announcements (issue #5): `__announcement_file_read__`
+  now converts announcement index keys (inner level) from JSON strings to integers, matching the
+  integer lookups used throughout the UI callbacks.
+
 ### v2025.2.7
 - Expands unit test coverage: adds `TestFormatSpec`, `TestAnnouncementFileIO`, `TestAnnouncementCRUD`, and
   `TestGeneratorList` test classes; adds edge-case tests for non-numeric and malformed datetime values in
   `TestFormatDigits`; patches `indigo.Dict` in `TestValidateDeviceConfigUi` for reliable out-of-host testing.
+- Updates `tests/shared` submodule to latest upstream (`TestingBase`): hardens `run_host_script` against
+  concurrent IPH3 processes, adds optional `pause_after` parameter to several API methods.
 
 ### v2025.2.6 [released]
 - Fixes `validate_device_config_ui` for salutations devices returning a 3-tuple `(True, values_dict, {})` on

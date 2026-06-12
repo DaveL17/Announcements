@@ -502,8 +502,11 @@ class Plugin(indigo.PluginBase):
                 with open(self.announcements_file, 'w', encoding="utf-8") as outfile:
                     json.dump(d, outfile, ensure_ascii=False, indent=4)
 
-        # Convert the string keys to int keys
-        return {int(key): value for key, value in d.items()}
+        # Convert the string keys to int keys at both levels (JSON always serializes keys as strings)
+        return {
+            int(outer_key): {int(inner_key): inner_val for inner_key, inner_val in outer_val.items()}
+            for outer_key, outer_val in d.items()
+        }
 
     # =============================================================================
     def __announcement_file_write__(self, announcements: dict) -> bool:
