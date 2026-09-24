@@ -1,4 +1,22 @@
-### v2025.2.8
+### v2025.2.9
+- Fixes lost updates to the announcements JSON file: wraps every read-modify-write sequence (save, delete,
+  duplicate, manual refresh, background refresh thread, startup) in a shared lock so concurrent access no
+  longer silently overwrites another operation's changes.
+- Hardens `__announcement_file_read__` against a malformed device entry: skips and logs a warning instead of
+  raising an unhandled `AttributeError` that could break the entire file read.
+- Fixes `__announcement_save__` allowing an edited announcement to be renamed to a name already in use by
+  another announcement, which produced duplicate/ambiguous device states.
+- Fixes `generator_substitutions` raising an unhandled `KeyError` when generating a substitution with no
+  device/variable selected.
+- Adds a warning-level log message when `__update_announcements_device__` encounters a malformed announcement
+  entry; previously silent at the plugin's default log level.
+- Fixes `announcement_refresh_action` not persisting `nextRefresh` after a manual refresh and not stopping
+  after the first match, so scheduled refreshes could re-fire early and name collisions could double-update.
+- Fixes `nightStart` fallback default (was `21`) to match the documented `Devices.xml` default (`22`).
+- Adds missing `-> None` return type annotations to `announcement_update_states_now_action` and
+  `refresh_fields`.
+
+### v2025.2.8 [released]
 - Fixes inability to edit, create, or save announcements (issue #5): `__announcement_file_read__`
   now converts announcement index keys (inner level) from JSON strings to integers, matching the
   integer lookups used throughout the UI callbacks.

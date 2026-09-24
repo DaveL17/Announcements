@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import string
+import threading
 
 # Third-party modules
 try:
@@ -39,7 +40,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Announcements Plugin for Indigo Home Control'
-__version__   = '2025.2.7'
+__version__   = '2025.2.9'
 
 
 # =============================================================================
@@ -76,6 +77,8 @@ class Plugin(indigo.PluginBase):
 
         # ============================ Instance Attributes ============================
         self.announcements_file   = ""
+        # Guards the announcements file against lost updates between the concurrent refresh thread and UI callbacks.
+        self._announcements_lock  = threading.RLock()
         self.debug_level          = int(self.pluginPrefs.get('showDebugLevel', "30"))
         self.pluginIsInitializing = True
         self.pluginIsShuttingDown = False
@@ -252,22 +255,23 @@ class Plugin(indigo.PluginBase):
         self.initialize_announcements_file()
 
         # ===================== Delete Out of Date Announcements =====================
-        # Open the announcements file and load the contents
-        infile = self.__announcement_file_read__()
+        with self._announcements_lock:
+            # Open the announcements file and load the contents
+            infile = self.__announcement_file_read__()
 
-        # Look at each plugin device id and delete any announcements if there is no longer an associated device.
-        del_keys = [key for key in infile if key not in indigo.devices]
+            # Look at each plugin device id and delete any announcements if there is no longer an associated device.
+            del_keys = [key for key in infile if key not in indigo.devices]
 
-        if len(del_keys) > 0:
-            _ = [infile.pop(key, None) for key in del_keys]
+            if len(del_keys) > 0:
+                _ = [infile.pop(key, None) for key in del_keys]
 
-        # Look at each plugin device and construct a placeholder if not already present.
-        for dev in indigo.devices.iter('self'):
-            if dev.id not in infile:
-                infile[dev.id] = {}
+            # Look at each plugin device and construct a placeholder if not already present.
+            for dev in indigo.devices.iter('self'):
+                if dev.id not in infile:
+                    infile[dev.id] = {}
 
-        # Open the announcements file and save the new dict.
-        self.__announcement_file_write__(infile)
+            # Open the announcements file and save the new dict.
+            self.__announcement_file_write__(infile)
 
     # =============================================================================
     def validate_device_config_ui(self, values_dict: indigo.Dict=None, type_id: str="salutationsDevice", dev_id: int=0) -> tuple:  # noqa
@@ -397,14 +401,15 @@ class Plugin(indigo.PluginBase):
         if not values_dict.get('announcementList'):
             return values_dict
 
-        # Open the announcements file and load the contents
-        announcements = self.__announcement_file_read__()
+        with self._announcements_lock:
+            # Open the announcements file and load the contents
+            announcements = self.__announcement_file_read__()
 
-        index = int(values_dict['announcementList'])
-        del announcements[dev_id][index]
+            index = int(values_dict['announcementList'])
+            del announcements[dev_id][index]
 
-        # Open the announcements file and save the new dict.
-        self.__announcement_file_write__(announcements)
+            # Open the announcements file and save the new dict.
+            self.__announcement_file_write__(announcements)
 
         return self.__clear_announcement_fields__(values_dict)
 
@@ -428,23 +433,24 @@ class Plugin(indigo.PluginBase):
         index = int(values_dict['announcementList'])
         self.logger.info("Announcement to be duplicated: %s", index)
 
-        # Open the announcements file and load the contents
-        announcements = self.__announcement_file_read__()
+        with self._announcements_lock:
+            # Open the announcements file and load the contents
+            announcements = self.__announcement_file_read__()
 
-        # Create a new announcement.
-        temp_dict                            = announcements[dev_id]
-        new_index                            = self.announcement_create_id(temp_dict)
-        temp_dict[new_index]                 = {}
-        temp_dict[new_index]['Name']         = announcements[dev_id][index]['Name'] + " copy"
-        temp_dict[new_index]['Announcement'] = announcements[dev_id][index]['Announcement']
-        temp_dict[new_index]['Refresh']      = announcements[dev_id][index]['Refresh']
-        temp_dict[new_index]['nextRefresh']  = announcements[dev_id][index]['nextRefresh']
+            # Create a new announcement.
+            temp_dict                            = announcements[dev_id]
+            new_index                            = self.announcement_create_id(temp_dict)
+            temp_dict[new_index]                 = {}
+            temp_dict[new_index]['Name']         = announcements[dev_id][index]['Name'] + " copy"
+            temp_dict[new_index]['Announcement'] = announcements[dev_id][index]['Announcement']
+            temp_dict[new_index]['Refresh']      = announcements[dev_id][index]['Refresh']
+            temp_dict[new_index]['nextRefresh']  = announcements[dev_id][index]['nextRefresh']
 
-        # Set the dict element equal to the new list
-        announcements[dev_id] = temp_dict
+            # Set the dict element equal to the new list
+            announcements[dev_id] = temp_dict
 
-        # Open the announcements file and save the new dict.
-        self.__announcement_file_write__(announcements)
+            # Open the announcements file and save the new dict.
+            self.__announcement_file_write__(announcements)
 
         return values_dict
 
@@ -488,7 +494,7 @@ class Plugin(indigo.PluginBase):
         Returns:
             dict: The announcements data keyed by device ID.
         """
-        with open(self.announcements_file, mode='r', encoding="utf-8") as infile:
+        with self._announcements_lock, open(self.announcements_file, mode='r', encoding="utf-8") as infile:
             d = infile.read()
             # source is JSON
             try:
@@ -502,11 +508,15 @@ class Plugin(indigo.PluginBase):
                 with open(self.announcements_file, 'w', encoding="utf-8") as outfile:
                     json.dump(d, outfile, ensure_ascii=False, indent=4)
 
-        # Convert the string keys to int keys at both levels (JSON always serializes keys as strings)
-        return {
-            int(outer_key): {int(inner_key): inner_val for inner_key, inner_val in outer_val.items()}
-            for outer_key, outer_val in d.items()
-        }
+        # Convert the string keys to int keys at both levels (JSON always serializes keys as strings). Skip any
+        # device entry that isn't itself a dict rather than letting one malformed entry break the whole read.
+        result = {}
+        for outer_key, outer_val in d.items():
+            if not isinstance(outer_val, dict):
+                self.logger.warning("Malformed announcements entry for device %s; skipping.", outer_key)
+                continue
+            result[int(outer_key)] = {int(inner_key): inner_val for inner_key, inner_val in outer_val.items()}
+        return result
 
     # =============================================================================
     def __announcement_file_write__(self, announcements: dict) -> bool:
@@ -519,7 +529,7 @@ class Plugin(indigo.PluginBase):
             bool: True if write succeeded.
         """
         # Open the announcements file and write the contents
-        with open(self.announcements_file, mode='w', encoding="utf-8") as outfile:
+        with self._announcements_lock, open(self.announcements_file, mode='w', encoding="utf-8") as outfile:
             json.dump(announcements, outfile, ensure_ascii=False, indent=4)
         return True
 
@@ -536,16 +546,25 @@ class Plugin(indigo.PluginBase):
         device_id         = int(plugin_action.props['announcementDeviceToRefresh'])
         dev               = indigo.devices[device_id]
 
-        # Open the announcements file and load the contents
-        announcements = self.__announcement_file_read__()
+        with self._announcements_lock:
+            # Open the announcements file and load the contents
+            announcements = self.__announcement_file_read__()
 
-        # Iterate through the keys to find the right announcement to update. Compare state-name forms
-        # (spaces → underscores) to avoid reversing a lossy transform.
-        announcement_dict = announcements[int(device_id)]
-        for key in announcement_dict:
-            if announcement_dict[key]['Name'].replace(' ', '_') == announcement_name:
-                result = self.__process_announcement__(announcements[device_id][key]['Announcement'])
-                dev.updateStateOnServer(announcement_name, value=result)
+            # Iterate through the keys to find the right announcement to update. Compare state-name forms
+            # (spaces → underscores) to avoid reversing a lossy transform.
+            announcement_dict = announcements[int(device_id)]
+            for key in announcement_dict:
+                if announcement_dict[key]['Name'].replace(' ', '_') == announcement_name:
+                    entry  = announcements[device_id][key]
+                    result = self.__process_announcement__(entry['Announcement'])
+                    dev.updateStateOnServer(announcement_name, value=result)
+
+                    # Advance nextRefresh so the background thread doesn't re-fire at the stale scheduled time.
+                    next_update        = dt.datetime.now() + dt.timedelta(minutes=float(entry['Refresh']))
+                    entry['nextRefresh'] = next_update.strftime('%Y-%m-%d %H:%M:%S')
+                    break
+
+            self.__announcement_file_write__(announcements)
 
         self.logger.info("Refreshed %s announcement.", announcement_name)
 
@@ -565,90 +584,98 @@ class Plugin(indigo.PluginBase):
         """
         error_msg_dict = indigo.Dict()
 
-        # ============================ Validation Methods =============================
-        # Strip leading and trailing whitespace if there is any.
-        values_dict['announcementName'] = values_dict['announcementName'].strip()
+        with self._announcements_lock:
+            # Open the announcements file and load the contents (needed for the duplicate-name check below).
+            announcements = self.__announcement_file_read__()
 
-        # Announcement Name
-        if values_dict['announcementName'] in ('', 'REQUIRED',) \
-                or values_dict['announcementName'][0].isdigit() \
-                or values_dict['announcementName'][0] in set(string.punctuation) \
-                or values_dict['announcementName'][0:3].lower() == 'xml':
-            values_dict['announcementName']    = 'REQUIRED'
-            error_msg_dict['announcementName'] = (
-                "An announcement name is required. It cannot start with a number, a form of punctuation or the letters "
-                "'xml'."
-            )
+            try:
+                temp_dict = announcements[dev_id]
+            except KeyError:
+                temp_dict = {}
 
-        # Announcement Text
-        if values_dict['announcementText'].isspace() or values_dict['announcementText'] in ('', 'REQUIRED',):
-            values_dict['announcementText']    = 'REQUIRED'
-            error_msg_dict['announcementText'] = "An announcement is required."
+            # Generate a list of announcement names in use for this device, excluding the entry being edited (if any).
+            edit_index              = int(values_dict['announcementIndex']) if values_dict['editFlag'] else None
+            announcement_name_list  = [temp_dict[key]['Name'] for key in temp_dict if key != edit_index]
 
-        # Refresh time
-        try:
-            if int(values_dict['announcementRefresh']) <= 0:
+            # ============================ Validation Methods =============================
+            # Strip leading and trailing whitespace if there is any.
+            values_dict['announcementName'] = values_dict['announcementName'].strip()
+
+            # Announcement Name
+            if values_dict['announcementName'] in ('', 'REQUIRED',) \
+                    or values_dict['announcementName'][0].isdigit() \
+                    or values_dict['announcementName'][0] in set(string.punctuation) \
+                    or values_dict['announcementName'][0:3].lower() == 'xml':
+                values_dict['announcementName']    = 'REQUIRED'
+                error_msg_dict['announcementName'] = (
+                    "An announcement name is required. It cannot start with a number, a form of punctuation or the "
+                    "letters 'xml'."
+                )
+            elif values_dict['editFlag'] and values_dict['announcementName'] in announcement_name_list:
+                error_msg_dict['announcementName'] = "An announcement with this name already exists."
+
+            # Announcement Text
+            if values_dict['announcementText'].isspace() or values_dict['announcementText'] in ('', 'REQUIRED',):
+                values_dict['announcementText']    = 'REQUIRED'
+                error_msg_dict['announcementText'] = "An announcement is required."
+
+            # Refresh time
+            try:
+                if int(values_dict['announcementRefresh']) <= 0:
+                    values_dict['announcementRefresh']    = 1
+                    error_msg_dict['announcementRefresh'] = (
+                        "The refresh interval must be an integer greater than zero."
+                    )
+            except ValueError:
                 values_dict['announcementRefresh']    = 1
                 error_msg_dict['announcementRefresh'] = "The refresh interval must be an integer greater than zero."
-        except ValueError:
-            values_dict['announcementRefresh']    = 1
-            error_msg_dict['announcementRefresh'] = "The refresh interval must be an integer greater than zero."
 
-        if len(error_msg_dict) > 0:
-            error_msg_dict['showAlertText'] = (
-                "Configuration Errors\n\nThere are one or more settings that need to be corrected. Fields requiring "
-                "attention will be highlighted."
-            )
-            return values_dict, error_msg_dict
+            if len(error_msg_dict) > 0:
+                error_msg_dict['showAlertText'] = (
+                    "Configuration Errors\n\nThere are one or more settings that need to be corrected. Fields "
+                    "requiring attention will be highlighted."
+                )
+                return values_dict, error_msg_dict
 
-        # =============================================================================
-        # There are no validation errors, so let's continue. Open the announcements file and load the contents
-        announcements = self.__announcement_file_read__()
+            # =============================================================================
+            # There are no validation errors, so let's continue.
 
-        try:
-            temp_dict = announcements[dev_id]
-        except KeyError:
-            temp_dict = {}
+            # If new announcement, create unique id, then save to dict.
+            if not values_dict['editFlag'] and values_dict['announcementName'] not in announcement_name_list:
+                index             = self.announcement_create_id(temp_dict=temp_dict)
+                temp_dict[index]  = {
+                    'Name': values_dict['announcementName'],
+                    'Announcement': values_dict['announcementText'],
+                    'Refresh': values_dict['announcementRefresh'],
+                    'nextRefresh': f"{dt.datetime.now()}"
+                }
 
-        # Generate a list of announcement names in use for this device.
-        announcement_name_list = [temp_dict[key]['Name'] for key in temp_dict]
+            # If key exists, save to dict.
+            elif values_dict['editFlag']:
+                index                            = int(values_dict['announcementIndex'])
+                temp_dict[index]['Name']         = values_dict['announcementName']
+                temp_dict[index]['Announcement'] = values_dict['announcementText']
+                temp_dict[index]['Refresh']      = values_dict['announcementRefresh']
 
-        # If new announcement, create unique id, then save to dict.
-        if not values_dict['editFlag'] and values_dict['announcementName'] not in announcement_name_list:
-            index             = self.announcement_create_id(temp_dict=temp_dict)
-            temp_dict[index]  = {
-                'Name': values_dict['announcementName'],
-                'Announcement': values_dict['announcementText'],
-                'Refresh': values_dict['announcementRefresh'],
-                'nextRefresh': f"{dt.datetime.now()}"
-            }
+            # User has created a new announcement with a name already in use. Append " X" until unique.
+            else:
+                unique_name = f"{values_dict['announcementName']} X"
+                while unique_name in announcement_name_list:
+                    unique_name += " X"
+                index            = self.announcement_create_id(temp_dict=temp_dict)
+                temp_dict[index] = {
+                    'Name': unique_name,
+                    'Announcement': values_dict['announcementText'],
+                    'Refresh': values_dict['announcementRefresh'],
+                    'nextRefresh': f"{dt.datetime.now()}"
+                }
+                self.logger.warning("Duplicate announcement name found. Temporary correction applied.")
 
-        # If key exists, save to dict.
-        elif values_dict['editFlag']:
-            index                            = int(values_dict['announcementIndex'])
-            temp_dict[index]['Name']         = values_dict['announcementName']
-            temp_dict[index]['Announcement'] = values_dict['announcementText']
-            temp_dict[index]['Refresh']      = values_dict['announcementRefresh']
+            # Set the dict element equal to the new list
+            announcements[dev_id] = temp_dict
 
-        # User has created a new announcement with a name already in use. Append " X" until unique.
-        else:
-            unique_name = f"{values_dict['announcementName']} X"
-            while unique_name in announcement_name_list:
-                unique_name += " X"
-            index            = self.announcement_create_id(temp_dict=temp_dict)
-            temp_dict[index] = {
-                'Name': unique_name,
-                'Announcement': values_dict['announcementText'],
-                'Refresh': values_dict['announcementRefresh'],
-                'nextRefresh': f"{dt.datetime.now()}"
-            }
-            self.logger.warning("Duplicate announcement name found. Temporary correction applied.")
-
-        # Set the dict element equal to the new list
-        announcements[dev_id] = temp_dict
-
-        # Open the announcements file and save the new dict.
-        self.__announcement_file_write__(announcements)
+            # Open the announcements file and save the new dict.
+            self.__announcement_file_write__(announcements)
 
         # Clear the fields.
         return self.__clear_announcement_fields__(values_dict)
@@ -765,7 +792,7 @@ class Plugin(indigo.PluginBase):
         morning_start   = int(dev.pluginProps.get('morningStart', '5'))
         afternoon_start = int(dev.pluginProps.get('afternoonStart', '12'))
         evening_start   = int(dev.pluginProps.get('eveningStart', '17'))
-        night_start     = int(dev.pluginProps.get('nightStart', '21'))
+        night_start     = int(dev.pluginProps.get('nightStart', '22'))
         morning         = dt.datetime.combine(today, dt.time(morning_start, 0))
         afternoon       = dt.datetime.combine(today, dt.time(afternoon_start, 0))
         evening         = dt.datetime.combine(today, dt.time(evening_start, 0))
@@ -862,6 +889,7 @@ class Plugin(indigo.PluginBase):
             return announcements
 
         except KeyError:
+            self.logger.warning("Malformed announcement entry for device %s; skipping update.", dev.id)
             self.logger.debug("Error: ", exc_info=True)
             return announcements
 
@@ -878,23 +906,24 @@ class Plugin(indigo.PluginBase):
         """
         self.logger.debug("Updating announcement states")
 
-        # Load the announcements file and convert to a dict
-        announcements = self.__announcement_file_read__()
+        with self._announcements_lock:
+            # Load the announcements file and convert to a dict
+            announcements = self.__announcement_file_read__()
 
-        for dev in indigo.devices.iter('self'):
+            for dev in indigo.devices.iter('self'):
 
-            if dev.enabled:
+                if dev.enabled:
 
-                # Salutations device
-                if dev.deviceTypeId == 'salutationsDevice':
-                    self.__update_salutations_device__(dev)
+                    # Salutations device
+                    if dev.deviceTypeId == 'salutationsDevice':
+                        self.__update_salutations_device__(dev)
 
-                # Announcements device
-                elif dev.deviceTypeId == 'announcementsDevice':
-                    announcements = self.__update_announcements_device__(dev, announcements, force)
+                    # Announcements device
+                    elif dev.deviceTypeId == 'announcementsDevice':
+                        announcements = self.__update_announcements_device__(dev, announcements, force)
 
-        # Open the announcements file and save the updated dict.
-        self.__announcement_file_write__(announcements)
+            # Open the announcements file and save the updated dict.
+            self.__announcement_file_write__(announcements)
 
     # =============================================================================
     def announcement_update_states_now(self) -> None:
@@ -907,7 +936,7 @@ class Plugin(indigo.PluginBase):
         self.logger.info("All announcements updated.")
 
     # =============================================================================
-    def announcement_update_states_now_action(self, action: indigo.actionGroup=None):  # noqa
+    def announcement_update_states_now_action(self, action: indigo.actionGroup=None) -> None:  # noqa
         """Force all announcement updates via action item call.
 
         Delegates to announcement_update_states_now(), causing all announcements to be updated regardless of their
@@ -1204,8 +1233,7 @@ class Plugin(indigo.PluginBase):
             return values_dict
 
         except ValueError:
-            result = self.__process_announcement__(values_dict['textfield1'])
-            self.logger.info('Substitution Generator announcement: "%s"', result)
+            self.logger.warning("Please select a device or variable before generating a substitution.")
             return values_dict
 
     # =============================================================================
@@ -1262,7 +1290,7 @@ class Plugin(indigo.PluginBase):
         self.browser_open("https://github.com/DaveL17/Announcements/issues")
 
     # =============================================================================
-    def refresh_fields(self, fltr: str="", type_id: str="", target_id: int=0):  # noqa
+    def refresh_fields(self, fltr: str="", type_id: str="", target_id: int=0) -> None:  # noqa
         """Dummy callback to force dynamic control refreshes.
 
         Used solely to fire other actions that require a callback. Performs no other function.
