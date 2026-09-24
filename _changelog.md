@@ -1,4 +1,4 @@
-### v2025.2.9
+### v2025.2.9 [released]
 - Fixes lost updates to the announcements JSON file: wraps every read-modify-write sequence (save, delete,
   duplicate, manual refresh, background refresh thread, startup) in a shared lock so concurrent access no
   longer silently overwrites another operation's changes.
